@@ -1,0 +1,79 @@
+@model HotelBooking.ViewModels.AdminHotelListViewModel
+@{
+    ViewData["Title"] = "Manage Hotels";
+}
+
+<div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold">Manage Hotels</h1>
+    <a asp-action="CreateHotel" class="btn btn-primary gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Hotel
+    </a>
+</div>
+
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <div class="overflow-x-auto">
+            <table class="table table-zebra">
+                <thead>
+                    <tr>
+                        <th>Hotel</th>
+                        <th>City</th>
+                        <th>Rating</th>
+                        <th>Rooms</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var hotel in Model.Hotels)
+                    {
+                        <tr>
+                            <td class="font-medium">@hotel.Name</td>
+                            <td>@hotel.City</td>
+                            <td>
+                                <div class="rating rating-sm">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <input type="radio" class="mask mask-star-2 bg-orange-400" disabled checked="@(i <= hotel.StarRating)" />
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-success">@hotel.AvailableRooms available</span>
+                                <span class="text-base-content/70">/ @hotel.TotalRooms total</span>
+                            </td>
+                            <td>
+                                @if (hotel.IsActive)
+                                {
+                                    <span class="badge badge-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-error">Inactive</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="flex gap-2">
+                                    <a asp-action="Rooms" asp-route-hotelId="@hotel.HotelId" class="btn btn-ghost btn-sm">
+                                        Rooms
+                                    </a>
+                                    <a asp-action="EditHotel" asp-route-id="@hotel.HotelId" class="btn btn-ghost btn-sm">
+                                        Edit
+                                    </a>
+                                    <form asp-action="DeleteHotel" asp-route-id="@hotel.HotelId" method="post"
+                                          onsubmit="return confirm('Are you sure you want to delete this hotel?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-ghost btn-sm text-error">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

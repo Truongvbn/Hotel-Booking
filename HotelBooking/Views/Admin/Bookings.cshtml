@@ -1,0 +1,106 @@
+@model HotelBooking.ViewModels.AdminBookingListViewModel
+@{
+    ViewData["Title"] = "Manage Bookings";
+}
+
+<div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold">Manage Bookings</h1>
+    <a asp-action="Dashboard" class="btn btn-ghost">← Back to Dashboard</a>
+</div>
+
+<!-- Filters -->
+<div class="card bg-base-100 shadow mb-6">
+    <div class="card-body py-4">
+        <form method="get" class="flex flex-wrap gap-4 items-end">
+            <div class="form-control">
+                <label class="label"><span class="label-text">Status</span></label>
+                <select name="status" class="select select-bordered select-sm">
+                    <option value="">All Statuses</option>
+                    <option value="Pending" selected="@(Model.StatusFilter == "Pending")">Pending</option>
+                    <option value="Confirmed" selected="@(Model.StatusFilter == "Confirmed")">Confirmed</option>
+                    <option value="CheckedIn" selected="@(Model.StatusFilter == "CheckedIn")">Checked In</option>
+                    <option value="CheckedOut" selected="@(Model.StatusFilter == "CheckedOut")">Checked Out</option>
+                    <option value="Cancelled" selected="@(Model.StatusFilter == "Cancelled")">Cancelled</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+        </form>
+    </div>
+</div>
+
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <div class="overflow-x-auto">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Guest</th>
+                        <th>Hotel / Room</th>
+                        <th>Dates</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var booking in Model.Bookings)
+                    {
+                        <tr>
+                            <td class="font-mono">#@booking.BookingId</td>
+                            <td>
+                                <div class="font-medium">@booking.GuestName</div>
+                                <div class="text-sm text-base-content/70">@booking.GuestEmail</div>
+                            </td>
+                            <td>
+                                <div>@booking.HotelName</div>
+                                <div class="text-sm text-base-content/70">@booking.RoomTypeName - Room @booking.RoomNumber</div>
+                            </td>
+                            <td>
+                                <div>@booking.CheckInDate.ToString("MMM dd") → @booking.CheckOutDate.ToString("MMM dd")</div>
+                                <div class="text-sm text-base-content/70">@booking.GuestCount guests</div>
+                            </td>
+                            <td class="font-bold">@booking.TotalPrice.ToString("N0")₫</td>
+                            <td>
+                                <span class="badge @booking.StatusBadgeClass">@booking.Status</span>
+                            </td>
+                            <td>
+                                <div class="flex flex-wrap gap-1">
+                                    @if (booking.CanConfirm)
+                                    {
+                                        <form asp-action="ConfirmBooking" asp-route-id="@booking.BookingId" method="post" class="inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-success btn-xs">Confirm</button>
+                                        </form>
+                                    }
+                                    @if (booking.CanCheckIn)
+                                    {
+                                        <form asp-action="CheckIn" asp-route-id="@booking.BookingId" method="post" class="inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-primary btn-xs">Check In</button>
+                                        </form>
+                                    }
+                                    @if (booking.CanCheckOut)
+                                    {
+                                        <form asp-action="CheckOut" asp-route-id="@booking.BookingId" method="post" class="inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-info btn-xs">Check Out</button>
+                                        </form>
+                                    }
+                                    @if (booking.CanCancel)
+                                    {
+                                        <form asp-action="CancelBooking" asp-route-id="@booking.BookingId" method="post" class="inline"
+                                              onsubmit="return confirm('Cancel this booking?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-error btn-xs btn-outline">Cancel</button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

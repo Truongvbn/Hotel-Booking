@@ -1,0 +1,89 @@
+@model HotelBooking.ViewModels.AdminRoomListViewModel
+@{
+    ViewData["Title"] = $"Rooms - {Model.HotelName}";
+}
+
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <a asp-action="Hotels" class="text-base-content/70 hover:text-primary">← Back to Hotels</a>
+        <h1 class="text-3xl font-bold mt-2">@Model.HotelName - Rooms</h1>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card bg-base-100 shadow mb-6">
+    <div class="card-body py-4">
+        <form method="get" class="flex flex-wrap gap-4 items-end">
+            <input type="hidden" name="hotelId" value="@Model.HotelId" />
+            <div class="form-control">
+                <label class="label"><span class="label-text">Status</span></label>
+                <select name="status" class="select select-bordered select-sm">
+                    <option value="">All Statuses</option>
+                    <option value="Available" selected="@(Model.StatusFilter == "Available")">Available</option>
+                    <option value="Occupied" selected="@(Model.StatusFilter == "Occupied")">Occupied</option>
+                    <option value="Maintenance" selected="@(Model.StatusFilter == "Maintenance")">Maintenance</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+        </form>
+    </div>
+</div>
+
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <div class="overflow-x-auto">
+            <table class="table table-zebra">
+                <thead>
+                    <tr>
+                        <th>Room</th>
+                        <th>Type</th>
+                        <th>Floor</th>
+                        <th>Capacity</th>
+                        <th>Price/Night</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var room in Model.Rooms)
+                    {
+                        <tr>
+                            <td class="font-bold">@room.RoomNumber</td>
+                            <td>@room.RoomTypeName</td>
+                            <td>Floor @room.Floor</td>
+                            <td>@room.Capacity guests</td>
+                            <td>@room.BasePrice.ToString("N0")₫</td>
+                            <td>
+                                <span class="badge @room.StatusBadgeClass">@room.Status</span>
+                            </td>
+                            <td>
+                                <div class="dropdown dropdown-end">
+                                    <div tabindex="0" role="button" class="btn btn-ghost btn-sm">
+                                        Change Status ▼
+                                    </div>
+                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                                        @foreach (var status in new[] { "Available", "Occupied", "Maintenance" })
+                                        {
+                                            @if (status != room.Status)
+                                            {
+                                                <li>
+                                                    <form asp-action="UpdateRoomStatus" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="roomId" value="@room.RoomId" />
+                                                        <input type="hidden" name="status" value="@status" />
+                                                        <input type="hidden" name="hotelId" value="@Model.HotelId" />
+                                                        <button type="submit">Set to @status</button>
+                                                    </form>
+                                                </li>
+                                            }
+                                        }
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

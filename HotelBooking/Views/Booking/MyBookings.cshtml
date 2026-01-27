@@ -1,0 +1,89 @@
+@model HotelBooking.ViewModels.MyBookingsViewModel
+@{
+    ViewData["Title"] = "Trips";
+}
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Trips</h1>
+
+    @if (!Model.Bookings.Any())
+    {
+        <div class="border rounded-2xl p-12 text-center">
+            <h2 class="text-xl font-bold mb-2">No trips booked... yet!</h2>
+            <p class="text-gray-500 mb-6">Time to dust off your bags and start planning your next adventure</p>
+            <a asp-controller="Hotel" asp-action="Search" class="btn btn-primary btn-lg rounded-xl">Start searching</a>
+        </div>
+    }
+    else
+    {
+        <div class="space-y-6">
+            <h2 class="text-2xl font-bold">Upcoming reservations</h2>
+            
+            @foreach (var booking in Model.Bookings)
+            {
+                <div class="flex flex-col md:flex-row bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow">
+                    <!-- Image content -->
+                    <div class="md:w-72 h-48 md:h-auto bg-gray-200 relative">
+                        @if (!string.IsNullOrEmpty(booking.HotelImageUrl))
+                        {
+                            <img src="@booking.HotelImageUrl" alt="@booking.HotelName" class="w-full h-full object-cover" />
+                        }
+                        else
+                        {
+                            <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                <span class="text-4xl">🏨</span>
+                            </div>
+                        }
+                    </div>
+                    
+                    <!-- Details content -->
+                    <div class="flex-1 p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="font-bold text-xl">@booking.HotelName</h3>
+                                    <p class="text-gray-500 text-sm">@booking.City</p>
+                                </div>
+                                <div class="badge @booking.StatusBadgeClass badge-lg">@booking.Status</div>
+                            </div>
+                            
+                            <div class="flex gap-8 mt-4">
+                                <div>
+                                    <div class="text-xs font-bold uppercase text-gray-500">Check-in</div>
+                                    <div class="font-medium text-lg">@booking.CheckInDate.ToString("MMM dd")</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold uppercase text-gray-500">Check-out</div>
+                                    <div class="font-medium text-lg">@booking.CheckOutDate.ToString("MMM dd, yyyy")</div>
+                                </div>
+                                <div class="hidden sm:block">
+                                    <div class="text-xs font-bold uppercase text-gray-500">Room</div>
+                                    <div class="font-medium">@booking.RoomTypeName</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-end mt-6">
+                            <div>
+                                <div class="text-xs text-gray-500">Booking code: <span class="font-mono">@booking.BookingId</span></div>
+                                <div class="font-bold text-xl mt-1">@booking.TotalPrice.ToString("N0")₫</div>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <a asp-action="Confirmation" asp-route-id="@booking.BookingId" class="btn btn-ghost btn-sm">Details</a>
+                                @if (booking.Status == "Pending" || booking.Status == "Confirmed")
+                                {
+                                    <form asp-action="Cancel" asp-route-id="@booking.BookingId" method="post" 
+                                          onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-outline btn-error btn-sm">Cancel</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

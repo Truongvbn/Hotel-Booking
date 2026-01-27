@@ -1,0 +1,82 @@
+@model HotelBooking.ViewModels.BookingConfirmationViewModel
+@{
+    ViewData["Title"] = "Booking Confirmed";
+}
+
+<div class="max-w-3xl mx-auto px-4 py-16 text-center">
+    <!-- Success Animation/Icon -->
+    <div class="mb-8 animate-in fade-in zoom-in duration-500">
+        <div class="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">Booking Confirmed!</h1>
+        <p class="text-xl text-gray-500 mt-3">You're all set for your trip to @Model.City.</p>
+        <p class="text-sm text-gray-400 mt-1">Order #@Model.BookingId</p>
+    </div>
+    
+    <!-- Receipt Card -->
+    <div class="bg-white border border-gray-200 shadow-xl rounded-2xl overflow-hidden text-left mb-8">
+        <div class="bg-gray-50 p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-gray-900">Receipt</h3>
+                <span class="badge badge-success">@Model.Status</span>
+            </div>
+        </div>
+        
+        <div class="p-8">
+            <div class="flex flex-col md:flex-row gap-8 mb-8">
+                <!-- Hotel Image -->
+                 <div class="w-full md:w-1/3 aspect-[4/3] bg-gray-200 rounded-lg overflow-hidden">
+                     <!-- Placeholder -->
+                     <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover" />
+                 </div>
+                 
+                 <div class="flex-1">
+                     <h2 class="text-2xl font-bold mb-1">@Model.HotelName</h2>
+                     <p class="text-gray-500 mb-4">@Model.RoomTypeName - Room @Model.RoomNumber</p>
+                     
+                     <div class="grid grid-cols-2 gap-6">
+                         <div>
+                             <p class="text-xs font-bold uppercase text-gray-500 mb-1">Check-in</p>
+                             <p class="font-semibold text-lg">@Model.CheckInDate.ToString("ddd, MMM dd")</p>
+                             <p class="text-sm text-gray-500">2:00 PM</p>
+                         </div>
+                         <div>
+                             <p class="text-xs font-bold uppercase text-gray-500 mb-1">Check-out</p>
+                             <p class="font-semibold text-lg">@Model.CheckOutDate.ToString("ddd, MMM dd")</p>
+                             <p class="text-sm text-gray-500">11:00 AM</p>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+            
+            <div class="border-t border-gray-100 pt-6">
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div>
+                         <p class="text-sm font-medium text-gray-900">Total details</p>
+                         <p class="text-2xl font-bold text-primary mt-1">@Model.TotalPrice.ToString("N0")₫</p>
+                     </div>
+                     <div>
+                         <p class="text-sm font-medium text-gray-900">Guests</p>
+                         <p class="text-gray-600 mt-1">@Model.GuestCount guests</p>
+                     </div>
+                 </div>
+            </div>
+            
+            @if (!string.IsNullOrEmpty(Model.SpecialRequests))
+            {
+                <div class="mt-6 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                    <p class="font-bold text-yellow-800 text-sm mb-1">Special Requests</p>
+                    <p class="text-yellow-700 text-sm">@Model.SpecialRequests</p>
+                </div>
+            }
+        </div>
+    </div>
+    
+    <div class="flex justify-center gap-4">
+        <a asp-controller="Booking" asp-action="MyBookings" class="btn btn-outline btn-lg rounded-xl">View Trips</a>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg rounded-xl px-8">Back to Home</a>
+    </div>
+</div>

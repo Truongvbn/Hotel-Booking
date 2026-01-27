@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="DataAccess/DataAccess.csproj" />
+  <Project Path="HotelBooking/HotelBooking.csproj" />
+  <Project Path="Services/Services.csproj" />
+</Solution>

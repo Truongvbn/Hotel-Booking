@@ -1,0 +1,13 @@
+{
+  "name": "hotelbooking",
+  "version": "1.0.0",
+  "description": "Hotel Booking System - Tailwind + DaisyUI",
+  "scripts": {
+    "css:build": "npx tailwindcss -i ./wwwroot/css/input.css -o ./wwwroot/css/site.css --minify",
+    "css:watch": "npx tailwindcss -i ./wwwroot/css/input.css -o ./wwwroot/css/site.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "daisyui": "^4.4.0"
+  }
+}

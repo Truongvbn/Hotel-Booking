@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply text-gray-800 bg-white font-sans antialiased;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-semibold tracking-tight;
+    }
+}
+
+@layer components {
+    .btn-modern {
+        @apply btn btn-primary border-none shadow-sm hover:shadow-md normal-case font-medium text-[15px] px-6 transition-all duration-200 text-white;
+    }
+
+    .btn-ghost-modern {
+        @apply btn btn-ghost normal-case font-medium hover:bg-gray-100 hover:text-black;
+    }
+
+    .card-modern {
+        @apply card bg-white border border-gray-100 rounded-2xl hover:shadow-hover transition-all duration-300 cursor-pointer overflow-hidden;
+    }
+
+    .input-modern {
+        @apply input input-bordered bg-white focus:outline-none focus:ring-2 focus:ring-neutral focus:border-transparent rounded-full px-5 shadow-sm;
+    }
+
+    .badge-modern {
+        @apply badge border-none font-medium text-xs py-3 px-3;
+    }
+
+    .container-custom {
+        @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    }
+}
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+}

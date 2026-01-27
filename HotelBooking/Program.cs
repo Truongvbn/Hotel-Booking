@@ -6,6 +6,10 @@ using DataAccess.Repositories.Interfaces;
 using Services;
 using Services.Interfaces;
 
+// Enable legacy timestamp behavior for Npgsql to handle DateTime with any Kind
+// This allows Local/Unspecified DateTime to be automatically converted to UTC
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Get connection string from configuration

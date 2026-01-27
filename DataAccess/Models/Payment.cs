@@ -9,7 +9,7 @@ public class Payment
     public string? TransactionId { get; set; }
     public string Status { get; set; } = "Pending"; // Pending, Completed, Failed, Refunded
     public DateTime? PaymentDate { get; set; }
-    public DateTime CreatedDate { get; set; } = DateTime.Now;
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
     // Navigation property
     public virtual Booking Booking { get; set; } = null!;

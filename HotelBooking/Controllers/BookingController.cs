@@ -95,9 +95,47 @@ public class BookingController : Controller
             TempData["Success"] = "Booking created successfully!";
             return RedirectToAction("Confirmation", new { id = booking.BookingId });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException)
         {
-            ModelState.AddModelError(string.Empty, ex.Message);
+            // Room availability or business logic error
+            ModelState.AddModelError(string.Empty, "This room is no longer available for the selected dates. Please select another room.");
+            
+            // Reload room details
+            var room = await _roomService.GetRoomDetailsAsync(model.RoomId);
+            if (room != null)
+            {
+                model.HotelName = room.RoomType.Hotel.Name;
+                model.RoomTypeName = room.RoomType.Name;
+                model.RoomNumber = room.RoomNumber;
+                model.Capacity = room.RoomType.Capacity;
+                model.PricePerNight = room.RoomType.BasePrice;
+            }
+            return View(model);
+        }
+        catch (ArgumentException ex)
+        {
+            // Validation error - check if message is user-friendly
+            var friendlyMessage = ex.Message.Contains("date") || ex.Message.Contains("guest")
+                ? ex.Message
+                : "Invalid booking details. Please check your information and try again.";
+            ModelState.AddModelError(string.Empty, friendlyMessage);
+            
+            // Reload room details
+            var room = await _roomService.GetRoomDetailsAsync(model.RoomId);
+            if (room != null)
+            {
+                model.HotelName = room.RoomType.Hotel.Name;
+                model.RoomTypeName = room.RoomType.Name;
+                model.RoomNumber = room.RoomNumber;
+                model.Capacity = room.RoomType.Capacity;
+                model.PricePerNight = room.RoomType.BasePrice;
+            }
+            return View(model);
+        }
+        catch (Exception)
+        {
+            // Generic error - don't expose internal details
+            ModelState.AddModelError(string.Empty, "An unexpected error occurred while creating your booking. Please try again.");
             
             // Reload room details
             var room = await _roomService.GetRoomDetailsAsync(model.RoomId);

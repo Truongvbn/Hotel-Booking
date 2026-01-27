@@ -447,8 +447,15 @@ public class HotelOwnerController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ConfirmBooking(int id)
     {
-        await _bookingService.ConfirmBookingAsync(id);
-        TempData["Success"] = "Booking confirmed.";
+        try
+        {
+            await _bookingService.ConfirmBookingAsync(id);
+            TempData["Success"] = "Booking confirmed.";
+        }
+        catch (Exception)
+        {
+            TempData["Error"] = "Unable to confirm booking. Please try again.";
+        }
         return RedirectToAction("Bookings");
     }
 
@@ -457,8 +464,15 @@ public class HotelOwnerController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CheckIn(int id)
     {
-        await _bookingService.CheckInAsync(id);
-        TempData["Success"] = "Guest checked in.";
+        try
+        {
+            await _bookingService.CheckInAsync(id);
+            TempData["Success"] = "Guest checked in.";
+        }
+        catch (Exception)
+        {
+            TempData["Error"] = "Unable to check in guest. Please verify booking status.";
+        }
         return RedirectToAction("Bookings");
     }
 
@@ -467,8 +481,15 @@ public class HotelOwnerController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CheckOut(int id)
     {
-        await _bookingService.CheckOutAsync(id);
-        TempData["Success"] = "Guest checked out.";
+        try
+        {
+            await _bookingService.CheckOutAsync(id);
+            TempData["Success"] = "Guest checked out.";
+        }
+        catch (Exception)
+        {
+            TempData["Error"] = "Unable to check out guest. Please verify booking status.";
+        }
         return RedirectToAction("Bookings");
     }
 
@@ -477,8 +498,15 @@ public class HotelOwnerController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CancelBooking(int id)
     {
-        await _bookingService.CancelBookingAsync(id);
-        TempData["Success"] = "Booking cancelled.";
+        try
+        {
+            await _bookingService.CancelBookingAsync(id);
+            TempData["Success"] = "Booking cancelled.";
+        }
+        catch (Exception)
+        {
+            TempData["Error"] = "Unable to cancel booking. Please try again.";
+        }
         return RedirectToAction("Bookings");
     }
 }

@@ -19,55 +19,91 @@ public class HotelController : Controller
     {
         var cities = await _hotelService.GetAllCitiesAsync();
         
-        // If no search criteria, show all hotels
-        IEnumerable<DataAccess.Models.Hotel> hotels;
-        if (string.IsNullOrWhiteSpace(model.City))
+        // Validate dates
+        if (model.CheckOutDate <= model.CheckInDate)
         {
-            hotels = await _hotelService.GetAllHotelsAsync();
+            ModelState.AddModelError("CheckOutDate", "Check-out date must be after check-in date");
         }
-        else
+        if (model.CheckInDate.Date < DateTime.Today)
         {
-            hotels = await _hotelService.SearchByCityAsync(model.City);
+            ModelState.AddModelError("CheckInDate", "Check-in date cannot be in the past");
         }
 
-        var hotelViewModels = new List<HotelItemViewModel>();
-        foreach (var hotel in hotels)
+        // If validation fails, return with empty results
+        if (!ModelState.IsValid)
         {
-            var rating = await _hotelService.GetHotelRatingAsync(hotel.HotelId);
-            var availableRooms = await _hotelService.SearchAvailableRoomsAsync(
-                hotel.HotelId, 
-                model.CheckInDate, 
-                model.CheckOutDate, 
-                model.Guests);
-
-            var minPrice = hotel.RoomTypes.Any() 
-                ? hotel.RoomTypes.Min(rt => rt.BasePrice) 
-                : 0;
-
-            hotelViewModels.Add(new HotelItemViewModel
+            var emptyResult = new HotelSearchResultViewModel
             {
-                HotelId = hotel.HotelId,
-                Name = hotel.Name,
-                Address = hotel.Address,
-                City = hotel.City,
-                Description = hotel.Description,
-                StarRating = hotel.StarRating,
-                ImageUrl = hotel.ImageUrl,
-                MinPrice = minPrice,
-                AvailableRoomsCount = availableRooms.Count(),
-                AverageRating = rating,
-                ReviewCount = hotel.Reviews?.Count() ?? 0
-            });
+                SearchCriteria = model,
+                Hotels = new List<HotelItemViewModel>(),
+                AvailableCities = cities
+            };
+            return View(emptyResult);
         }
 
-        var result = new HotelSearchResultViewModel
+        try
         {
-            SearchCriteria = model,
-            Hotels = hotelViewModels.Where(h => h.AvailableRoomsCount > 0),
-            AvailableCities = cities
-        };
+            // If no search criteria, show all hotels
+            IEnumerable<DataAccess.Models.Hotel> hotels;
+            if (string.IsNullOrWhiteSpace(model.City))
+            {
+                hotels = await _hotelService.GetAllHotelsAsync();
+            }
+            else
+            {
+                hotels = await _hotelService.SearchByCityAsync(model.City);
+            }
 
-        return View(result);
+            var hotelViewModels = new List<HotelItemViewModel>();
+            foreach (var hotel in hotels)
+            {
+                var rating = await _hotelService.GetHotelRatingAsync(hotel.HotelId);
+                var availableRooms = await _hotelService.SearchAvailableRoomsAsync(
+                    hotel.HotelId, 
+                    model.CheckInDate, 
+                    model.CheckOutDate, 
+                    model.Guests);
+
+                var minPrice = hotel.RoomTypes.Any() 
+                    ? hotel.RoomTypes.Min(rt => rt.BasePrice) 
+                    : 0;
+
+                hotelViewModels.Add(new HotelItemViewModel
+                {
+                    HotelId = hotel.HotelId,
+                    Name = hotel.Name,
+                    Address = hotel.Address,
+                    City = hotel.City,
+                    Description = hotel.Description,
+                    StarRating = hotel.StarRating,
+                    ImageUrl = hotel.ImageUrl,
+                    MinPrice = minPrice,
+                    AvailableRoomsCount = availableRooms.Count(),
+                    AverageRating = rating,
+                    ReviewCount = hotel.Reviews?.Count() ?? 0
+                });
+            }
+
+            var result = new HotelSearchResultViewModel
+            {
+                SearchCriteria = model,
+                Hotels = hotelViewModels.Where(h => h.AvailableRoomsCount > 0),
+                AvailableCities = cities
+            };
+
+            return View(result);
+        }
+        catch (Exception)
+        {
+            TempData["Error"] = "An error occurred while searching. Please try again.";
+            var emptyResult = new HotelSearchResultViewModel
+            {
+                SearchCriteria = model,
+                Hotels = new List<HotelItemViewModel>(),
+                AvailableCities = cities
+            };
+            return View(emptyResult);
+        }
     }
 
     // GET: /Hotel/Details/5

@@ -226,7 +226,8 @@ public class HotelBookingContext : DbContext
     private void SeedData(ModelBuilder modelBuilder)
     {
         // Use fixed date for seed data (EF Core doesn't support DateTime.Now in migrations)
-        var seedDate = new DateTime(2024, 1, 1, 0, 0, 0);
+        // PostgreSQL requires UTC DateTime
+        var seedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         // Seed Users
         modelBuilder.Entity<User>().HasData(

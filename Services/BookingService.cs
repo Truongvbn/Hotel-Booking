@@ -60,7 +60,7 @@ public class BookingService : IBookingService
             TotalPrice = totalPrice,
             Status = "Pending",
             SpecialRequests = specialRequests,
-            CreatedDate = DateTime.Now
+            CreatedDate = DateTime.UtcNow
         };
 
         return await _bookingRepository.AddAsync(booking);
@@ -95,7 +95,7 @@ public class BookingService : IBookingService
         }
 
         booking.Status = "Confirmed";
-        booking.UpdatedDate = DateTime.Now;
+        booking.UpdatedDate = DateTime.UtcNow;
 
         await _bookingRepository.UpdateAsync(booking);
         return booking;
@@ -116,7 +116,7 @@ public class BookingService : IBookingService
 
         // Update booking status
         booking.Status = "CheckedIn";
-        booking.UpdatedDate = DateTime.Now;
+        booking.UpdatedDate = DateTime.UtcNow;
         await _bookingRepository.UpdateAsync(booking);
 
         // Update room status
@@ -140,7 +140,7 @@ public class BookingService : IBookingService
 
         // Update booking status
         booking.Status = "CheckedOut";
-        booking.UpdatedDate = DateTime.Now;
+        booking.UpdatedDate = DateTime.UtcNow;
         await _bookingRepository.UpdateAsync(booking);
 
         // Update room status back to Available
@@ -164,7 +164,7 @@ public class BookingService : IBookingService
         }
 
         booking.Status = "Cancelled";
-        booking.UpdatedDate = DateTime.Now;
+        booking.UpdatedDate = DateTime.UtcNow;
         await _bookingRepository.UpdateAsync(booking);
 
         // If room was occupied, free it

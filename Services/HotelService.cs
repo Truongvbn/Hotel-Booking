@@ -71,7 +71,7 @@ public class HotelService : IHotelService
             throw new ArgumentException("Hotel name is required");
         }
 
-        hotel.CreatedDate = DateTime.Now;
+        hotel.CreatedDate = DateTime.UtcNow;
         hotel.IsActive = true;
 
         return await _hotelRepository.AddAsync(hotel);
@@ -96,7 +96,7 @@ public class HotelService : IHotelService
         existingHotel.ImageUrl = hotel.ImageUrl;
         existingHotel.Latitude = hotel.Latitude;
         existingHotel.Longitude = hotel.Longitude;
-        existingHotel.UpdatedDate = DateTime.Now;
+        existingHotel.UpdatedDate = DateTime.UtcNow;
 
         await _hotelRepository.UpdateAsync(existingHotel);
         return existingHotel;
@@ -112,7 +112,7 @@ public class HotelService : IHotelService
 
         // Soft delete
         hotel.IsActive = false;
-        hotel.UpdatedDate = DateTime.Now;
+        hotel.UpdatedDate = DateTime.UtcNow;
         await _hotelRepository.UpdateAsync(hotel);
     }
 }

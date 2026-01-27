@@ -9,7 +9,7 @@ public class RoomType
     public int Capacity { get; set; } = 2;
     public decimal BasePrice { get; set; }
     public string? ImageUrl { get; set; }
-    public DateTime CreatedDate { get; set; } = DateTime.Now;
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedDate { get; set; }
 
     // Navigation properties

@@ -82,9 +82,9 @@ public class UserController : Controller
 
             return RedirectToAction("Index", "Home");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            ModelState.AddModelError(string.Empty, ex.Message);
+            ModelState.AddModelError(string.Empty, "Login failed. Please try again later.");
             return View(model);
         }
     }
@@ -137,9 +137,15 @@ public class UserController : Controller
             TempData["Success"] = "Registration successful! Welcome to our hotel booking system.";
             return RedirectToAction("Index", "Home");
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
+            // Known errors like "Email already exists"
             ModelState.AddModelError(string.Empty, ex.Message);
+            return View(model);
+        }
+        catch (Exception)
+        {
+            ModelState.AddModelError(string.Empty, "Registration failed. Please try again later.");
             return View(model);
         }
     }

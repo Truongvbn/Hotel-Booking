@@ -71,7 +71,7 @@ public class RoomService : IRoomService
             Description = description,
             Capacity = capacity,
             BasePrice = basePrice,
-            CreatedDate = DateTime.Now
+            CreatedDate = DateTime.UtcNow
         };
 
         return await _roomTypeRepository.AddAsync(roomType);
@@ -90,7 +90,7 @@ public class RoomService : IRoomService
         existing.Capacity = roomType.Capacity;
         existing.BasePrice = roomType.BasePrice;
         existing.ImageUrl = roomType.ImageUrl;
-        existing.UpdatedDate = DateTime.Now;
+        existing.UpdatedDate = DateTime.UtcNow;
 
         await _roomTypeRepository.UpdateAsync(existing);
         return existing;
@@ -118,7 +118,7 @@ public class RoomService : IRoomService
                 RoomNumber = (startingNumber + i).ToString(),
                 Floor = floor,
                 Status = "Available",
-                CreatedDate = DateTime.Now
+                CreatedDate = DateTime.UtcNow
             };
             await _roomRepository.AddAsync(room);
         }
@@ -135,7 +135,7 @@ public class RoomService : IRoomService
         room.RoomNumber = roomNumber;
         room.Floor = floor;
         room.Status = status;
-        room.UpdatedDate = DateTime.Now;
+        room.UpdatedDate = DateTime.UtcNow;
 
         await _roomRepository.UpdateAsync(room);
         return room;

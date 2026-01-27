@@ -14,7 +14,7 @@ public class Hotel
     public string? Phone { get; set; }
     public string? Website { get; set; }
     public string? ImageUrl { get; set; }
-    public DateTime CreatedDate { get; set; } = DateTime.Now;
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedDate { get; set; }
     public bool IsActive { get; set; } = true;
 

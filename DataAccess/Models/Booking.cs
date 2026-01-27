@@ -11,7 +11,7 @@ public class Booking
     public decimal TotalPrice { get; set; }
     public string Status { get; set; } = "Pending"; // Pending, Confirmed, CheckedIn, CheckedOut, Cancelled
     public string? SpecialRequests { get; set; }
-    public DateTime CreatedDate { get; set; } = DateTime.Now;
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedDate { get; set; }
 
     // Navigation properties

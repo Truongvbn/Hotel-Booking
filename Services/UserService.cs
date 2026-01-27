@@ -67,7 +67,7 @@ public class UserService : IUserService
             PhoneNumber = phone,
             Role = "Customer",
             IsActive = true,
-            CreatedDate = DateTime.Now
+            CreatedDate = DateTime.UtcNow
         };
 
         return await _userRepository.AddAsync(user);
@@ -95,7 +95,7 @@ public class UserService : IUserService
         user.LastName = lastName;
         user.PhoneNumber = phone;
         user.Address = address;
-        user.UpdatedDate = DateTime.Now;
+        user.UpdatedDate = DateTime.UtcNow;
 
         await _userRepository.UpdateAsync(user);
         return user;
@@ -120,7 +120,7 @@ public class UserService : IUserService
         }
 
         user.Password = HashPassword(newPassword);
-        user.UpdatedDate = DateTime.Now;
+        user.UpdatedDate = DateTime.UtcNow;
 
         await _userRepository.UpdateAsync(user);
         return true;

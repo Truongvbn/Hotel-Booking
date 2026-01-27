@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using DataAccess.Models;
+using HotelBooking.Validation;
 
 namespace HotelBooking.ViewModels;
 
@@ -10,11 +11,13 @@ public class BookingViewModel
     [Required(ErrorMessage = "Check-in date is required")]
     [DataType(DataType.Date)]
     [Display(Name = "Check-in Date")]
+    [FutureDate(ErrorMessage = "Check-in date cannot be in the past")]
     public DateTime CheckInDate { get; set; }
 
     [Required(ErrorMessage = "Check-out date is required")]
     [DataType(DataType.Date)]
     [Display(Name = "Check-out Date")]
+    [DateGreaterThan("CheckInDate", ErrorMessage = "Check-out date must be after check-in date")]
     public DateTime CheckOutDate { get; set; }
 
     [Range(1, 10, ErrorMessage = "Guest count must be between 1 and 10")]

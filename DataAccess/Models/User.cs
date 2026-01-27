@@ -11,7 +11,7 @@ public class User
     public string? Address { get; set; }
     public string Role { get; set; } = "Customer"; // Customer, HotelOwner, Admin
     public int? HotelId { get; set; } // Only for HotelOwner role
-    public DateTime CreatedDate { get; set; } = DateTime.Now;
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedDate { get; set; }
     public bool IsActive { get; set; } = true;
 

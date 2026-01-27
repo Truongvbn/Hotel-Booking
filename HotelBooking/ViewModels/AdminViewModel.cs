@@ -1,4 +1,5 @@
 using DataAccess.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace HotelBooking.ViewModels;
 
@@ -113,16 +114,49 @@ public class AdminBookingItemViewModel
 public class HotelFormViewModel
 {
     public int HotelId { get; set; }
+    
+    [Required(ErrorMessage = "Hotel name is required")]
+    [StringLength(200, ErrorMessage = "Hotel name cannot exceed 200 characters")]
+    [Display(Name = "Hotel Name")]
     public string Name { get; set; } = string.Empty;
+    
+    [StringLength(500)]
+    [Display(Name = "Address")]
     public string? Address { get; set; }
+    
+    [Required(ErrorMessage = "City is required")]
+    [StringLength(100)]
+    [Display(Name = "City")]
     public string? City { get; set; }
+    
+    [StringLength(100)]
+    [Display(Name = "Country")]
     public string? Country { get; set; }
+    
+    [StringLength(2000)]
+    [Display(Name = "Description")]
     public string? Description { get; set; }
+    
+    [Range(1, 5, ErrorMessage = "Star rating must be between 1 and 5")]
+    [Display(Name = "Star Rating")]
     public decimal StarRating { get; set; }
+    
+    [Phone(ErrorMessage = "Invalid phone number")]
+    [Display(Name = "Phone")]
     public string? Phone { get; set; }
+    
+    [Url(ErrorMessage = "Invalid website URL")]
+    [Display(Name = "Website")]
     public string? Website { get; set; }
+    
+    [Url(ErrorMessage = "Invalid image URL")]
+    [Display(Name = "Image URL")]
     public string? ImageUrl { get; set; }
+    
+    [Display(Name = "Latitude")]
     public decimal? Latitude { get; set; }
+    
+    [Display(Name = "Longitude")]
     public decimal? Longitude { get; set; }
 }
 
@@ -130,10 +164,28 @@ public class RoomTypeFormViewModel
 {
     public int RoomTypeId { get; set; }
     public int HotelId { get; set; }
+    
+    [Required(ErrorMessage = "Room type name is required")]
+    [StringLength(100)]
+    [Display(Name = "Room Type Name")]
     public string Name { get; set; } = string.Empty;
+    
+    [StringLength(1000)]
+    [Display(Name = "Description")]
     public string? Description { get; set; }
+    
+    [Required(ErrorMessage = "Capacity is required")]
+    [Range(1, 20, ErrorMessage = "Capacity must be between 1 and 20")]
+    [Display(Name = "Capacity")]
     public int Capacity { get; set; } = 2;
+    
+    [Required(ErrorMessage = "Base price is required")]
+    [Range(0.01, 100000000, ErrorMessage = "Price must be greater than 0")]
+    [Display(Name = "Base Price")]
     public decimal BasePrice { get; set; }
+    
+    [Url(ErrorMessage = "Invalid image URL")]
+    [Display(Name = "Image URL")]
     public string? ImageUrl { get; set; }
 }
 

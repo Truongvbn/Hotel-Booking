@@ -10,7 +10,7 @@ public class Review
     public string? Title { get; set; }
     public string? Comment { get; set; }
     public bool IsApproved { get; set; } = false;
-    public DateTime CreatedDate { get; set; } = DateTime.Now;
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedDate { get; set; }
 
     // Navigation properties

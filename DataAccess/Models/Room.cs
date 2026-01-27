@@ -7,7 +7,7 @@ public class Room
     public string RoomNumber { get; set; } = string.Empty;
     public int Floor { get; set; } = 1;
     public string Status { get; set; } = "Available"; // Available, Occupied, Maintenance
-    public DateTime CreatedDate { get; set; } = DateTime.Now;
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedDate { get; set; }
 
     // Navigation properties

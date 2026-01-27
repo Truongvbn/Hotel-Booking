@@ -1,2 +1,21 @@
-﻿<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+﻿@* Custom validation scripts for date validation *@
+<script>
+    // Custom validation for future date
+    if ($.validator) {
+        $.validator.addMethod("futuredate", function (value, element) {
+            if (!value) return true;
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            var inputDate = new Date(value);
+            return inputDate >= today;
+        }, "Date cannot be in the past");
+
+        // Custom validation for date comparison
+        $.validator.addMethod("dategreater", function (value, element, params) {
+            if (!value) return true;
+            var startDate = new Date($(params).val());
+            var endDate = new Date(value);
+            return endDate > startDate;
+        }, "End date must be after start date");
+    }
+</script>

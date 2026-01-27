@@ -55,7 +55,7 @@ public class RoomRepository : Repository<Room>, IRoomRepository
         if (room != null)
         {
             room.Status = status;
-            room.UpdatedDate = DateTime.Now;
+            room.UpdatedDate = DateTime.UtcNow;
             await UpdateAsync(room);
         }
     }

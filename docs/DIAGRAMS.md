@@ -6,39 +6,71 @@ This document contains the system architecture diagrams for the Hotel Booking ap
 
 ## 1. Use Case Diagram
 
+> **Current Implementation Note:** Code currently has `Admin` and `Staff` roles with same permissions. Ideal model below shows separation between Hotel Owner (manages their hotel) and Platform Admin (manages entire platform).
+
 ```mermaid
 flowchart TB
     subgraph Actors
-        Guest((Guest))
-        Admin((Admin))
+        Customer((Customer))
+        HotelOwner((Hotel Owner))
+        PlatformAdmin((Platform Admin))
     end
 
-    subgraph "Hotel Booking System"
+    subgraph "Customer Functions"
         UC1[Search Hotels]
         UC2[View Hotel Details]
         UC3[Book Room]
-        UC4[Manage Booking]
-        UC5[Write Review]
-        UC6[Login / Register]
-        
-        UC7[Manage Hotels]
-        UC8[Manage Rooms]
-        UC9[Manage Bookings]
-        UC10[View Dashboard]
+        UC4[View My Bookings]
+        UC5[Cancel My Booking]
+        UC6[Write Review]
+        UC7[Register / Login]
     end
 
-    Guest --> UC1
-    Guest --> UC2
-    Guest --> UC3
-    Guest --> UC4
-    Guest --> UC5
-    Guest --> UC6
+    subgraph "Hotel Owner Functions"
+        UC8[Manage My Hotel Info]
+        UC9[Manage My Room Types]
+        UC10[Manage My Rooms]
+        UC11[View My Hotel Bookings]
+        UC12[Confirm Booking]
+        UC13[Check-in Guest]
+        UC14[Check-out Guest]
+        UC15[View My Revenue]
+    end
+    
+    subgraph "Platform Admin Functions"
+        UC16[View All Hotels]
+        UC17[Approve/Reject Hotels]
+        UC18[View All Bookings]
+        UC19[Manage Users]
+        UC20[View Platform Stats]
+        UC21[Handle Disputes]
+    end
 
-    Admin --> UC6
-    Admin --> UC7
-    Admin --> UC8
-    Admin --> UC9
-    Admin --> UC10
+    Customer --> UC1
+    Customer --> UC2
+    Customer --> UC3
+    Customer --> UC4
+    Customer --> UC5
+    Customer --> UC6
+    Customer --> UC7
+
+    HotelOwner --> UC7
+    HotelOwner --> UC8
+    HotelOwner --> UC9
+    HotelOwner --> UC10
+    HotelOwner --> UC11
+    HotelOwner --> UC12
+    HotelOwner --> UC13
+    HotelOwner --> UC14
+    HotelOwner --> UC15
+
+    PlatformAdmin --> UC7
+    PlatformAdmin --> UC16
+    PlatformAdmin --> UC17
+    PlatformAdmin --> UC18
+    PlatformAdmin --> UC19
+    PlatformAdmin --> UC20
+    PlatformAdmin --> UC21
 ```
 
 ---

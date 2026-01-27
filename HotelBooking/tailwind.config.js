@@ -20,9 +20,9 @@ module.exports = {
         themes: [
             {
                 ghost: {
-                    "primary": "#FF385C", // Airbnb Red
+                    "primary": "#E31C5F", // Slightly deeper Airbnb Red
                     "primary-content": "#ffffff",
-                    "secondary": "#008489", // Teal
+                    "secondary": "#008489",
                     "accent": "#FFB400",
                     "neutral": "#222222",
                     "base-100": "#ffffff",

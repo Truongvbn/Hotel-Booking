@@ -36,6 +36,12 @@ public class HotelBookingContext : DbContext
             entity.Property(e => e.PhoneNumber).HasMaxLength(20);
             entity.Property(e => e.Address).HasMaxLength(255);
             entity.Property(e => e.Role).HasMaxLength(20).HasDefaultValue("Customer");
+            
+            // HotelOwner relationship
+            entity.HasOne(e => e.Hotel)
+                  .WithMany()
+                  .HasForeignKey(e => e.HotelId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Hotel configuration
@@ -170,24 +176,65 @@ public class HotelBookingContext : DbContext
             new User
             {
                 UserId = 1,
-                Email = "admin@hotel.com",
+                Email = "admin@hotelbooking.com",
                 Password = "Admin@123", // In production, this should be hashed
-                FirstName = "Admin",
-                LastName = "System",
+                FirstName = "Platform",
+                LastName = "Admin",
                 PhoneNumber = "0123456789",
                 Role = "Admin",
+                HotelId = null, // Platform admin, not tied to any hotel
                 IsActive = true,
                 CreatedDate = seedDate
             },
             new User
             {
                 UserId = 2,
-                Email = "customer@hotel.com",
+                Email = "customer@gmail.com",
                 Password = "Customer@123",
                 FirstName = "Nguyen",
                 LastName = "Van A",
                 PhoneNumber = "0987654321",
                 Role = "Customer",
+                HotelId = null,
+                IsActive = true,
+                CreatedDate = seedDate
+            },
+            new User
+            {
+                UserId = 3,
+                Email = "owner.grandluxury@hotel.com",
+                Password = "Owner@123",
+                FirstName = "Tran",
+                LastName = "Van B",
+                PhoneNumber = "0912345678",
+                Role = "HotelOwner",
+                HotelId = 1, // Owns Grand Luxury Hotel
+                IsActive = true,
+                CreatedDate = seedDate
+            },
+            new User
+            {
+                UserId = 4,
+                Email = "owner.beachparadise@hotel.com",
+                Password = "Owner@123",
+                FirstName = "Le",
+                LastName = "Thi C",
+                PhoneNumber = "0923456789",
+                Role = "HotelOwner",
+                HotelId = 2, // Owns Beach Paradise Resort
+                IsActive = true,
+                CreatedDate = seedDate
+            },
+            new User
+            {
+                UserId = 5,
+                Email = "owner.mountainview@hotel.com",
+                Password = "Owner@123",
+                FirstName = "Pham",
+                LastName = "Van D",
+                PhoneNumber = "0934567890",
+                Role = "HotelOwner",
+                HotelId = 3, // Owns Mountain View Lodge
                 IsActive = true,
                 CreatedDate = seedDate
             }

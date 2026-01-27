@@ -1,33 +1,66 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using HotelBooking.ViewModels;
 using Services.Interfaces;
 using DataAccess.Models;
 
 namespace HotelBooking.Controllers;
 
-[Authorize(Roles = "Admin,Staff")]
+[Authorize(Roles = "Admin,HotelOwner")]
 public class AdminController : Controller
 {
     private readonly IHotelService _hotelService;
     private readonly IRoomService _roomService;
     private readonly IBookingService _bookingService;
+    private readonly IUserService _userService;
 
     public AdminController(
         IHotelService hotelService,
         IRoomService roomService,
-        IBookingService bookingService)
+        IBookingService bookingService,
+        IUserService userService)
     {
         _hotelService = hotelService;
         _roomService = roomService;
         _bookingService = bookingService;
+        _userService = userService;
+    }
+
+    // Helper: Check if current user is Admin
+    private bool IsAdmin => User.IsInRole("Admin");
+    
+    // Helper: Get current user's HotelId (for HotelOwner)
+    private async Task<int?> GetUserHotelIdAsync()
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var user = await _userService.GetByIdAsync(userId);
+        return user?.HotelId;
     }
 
     // GET: /Admin/Dashboard
     [HttpGet]
     public async Task<IActionResult> Dashboard()
     {
-        var hotels = await _hotelService.GetAllHotelsAsync();
+        IEnumerable<Hotel> hotels;
+        
+        if (IsAdmin)
+        {
+            hotels = await _hotelService.GetAllHotelsAsync();
+        }
+        else
+        {
+            // HotelOwner: only their hotel
+            var hotelId = await GetUserHotelIdAsync();
+            if (!hotelId.HasValue)
+            {
+                TempData["Error"] = "You are not assigned to any hotel.";
+                return RedirectToAction("Index", "Home");
+            }
+            var hotel = await _hotelService.GetHotelDetailsAsync(hotelId.Value);
+            hotels = hotel != null ? new[] { hotel } : Array.Empty<Hotel>();
+        }
+
         var totalRooms = 0;
         var availableRooms = 0;
         var occupiedRooms = 0;
@@ -49,6 +82,7 @@ public class AdminController : Controller
             OccupancyRate = totalRooms > 0 ? (decimal)occupiedRooms / totalRooms * 100 : 0
         };
 
+        ViewBag.IsAdmin = IsAdmin;
         return View(model);
     }
 
@@ -58,7 +92,23 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> Hotels()
     {
-        var hotels = await _hotelService.GetAllHotelsAsync();
+        IEnumerable<Hotel> hotels;
+        
+        if (IsAdmin)
+        {
+            hotels = await _hotelService.GetAllHotelsAsync();
+        }
+        else
+        {
+            var hotelId = await GetUserHotelIdAsync();
+            if (!hotelId.HasValue)
+            {
+                TempData["Error"] = "You are not assigned to any hotel.";
+                return RedirectToAction("Dashboard");
+            }
+            var hotel = await _hotelService.GetHotelDetailsAsync(hotelId.Value);
+            hotels = hotel != null ? new[] { hotel } : Array.Empty<Hotel>();
+        }
         
         var model = new AdminHotelListViewModel
         {
@@ -75,11 +125,13 @@ public class AdminController : Controller
             })
         };
 
+        ViewBag.IsAdmin = IsAdmin;
         return View(model);
     }
 
     // GET: /Admin/CreateHotel
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     public IActionResult CreateHotel()
     {
         return View(new HotelFormViewModel());
@@ -87,6 +139,7 @@ public class AdminController : Controller
 
     // POST: /Admin/CreateHotel
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateHotel(HotelFormViewModel model)
     {
@@ -193,6 +246,7 @@ public class AdminController : Controller
 
     // POST: /Admin/DeleteHotel/5
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteHotel(int id)
     {
@@ -278,6 +332,18 @@ public class AdminController : Controller
         IEnumerable<Booking> bookings;
         string? hotelName = null;
 
+        // For HotelOwner, force filter to their hotel only
+        if (!IsAdmin)
+        {
+            var userHotelId = await GetUserHotelIdAsync();
+            if (!userHotelId.HasValue)
+            {
+                TempData["Error"] = "You are not assigned to any hotel.";
+                return RedirectToAction("Dashboard");
+            }
+            hotelId = userHotelId.Value;
+        }
+
         if (hotelId.HasValue)
         {
             var hotel = await _hotelService.GetHotelDetailsAsync(hotelId.Value);
@@ -286,7 +352,7 @@ public class AdminController : Controller
         }
         else
         {
-            // Get all bookings from all hotels
+            // Admin only: Get all bookings from all hotels
             var hotels = await _hotelService.GetAllHotelsAsync();
             var allBookings = new List<Booking>();
             foreach (var hotel in hotels)
@@ -326,6 +392,7 @@ public class AdminController : Controller
             })
         };
 
+        ViewBag.IsAdmin = IsAdmin;
         return View(model);
     }
 

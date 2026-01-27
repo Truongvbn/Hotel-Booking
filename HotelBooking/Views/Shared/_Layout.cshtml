@@ -79,9 +79,14 @@
                             </div>
                             <ul tabindex="0" class="menu menu-sm dropdown-content mt-2 z-[1] p-2 shadow-xl bg-white rounded-xl w-64 border border-gray-100">
                                 <li class="px-4 py-2 font-bold border-b border-gray-100 mb-2">@User.Identity.Name</li>
-                                @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                                @if (User.IsInRole("Admin"))
                                 {
-                                     <li><a asp-controller="Admin" asp-action="Dashboard" class="text-primary font-medium">Admin Dashboard</a></li>
+                                     <li><a asp-controller="Admin" asp-action="Dashboard" class="text-primary font-medium">🛡️ Admin Dashboard</a></li>
+                                     <li class="my-1 border-t border-gray-100"></li>
+                                }
+                                else if (User.IsInRole("HotelOwner"))
+                                {
+                                     <li><a asp-controller="HotelOwner" asp-action="Dashboard" class="text-secondary font-medium">🏨 Quản lý Hotel</a></li>
                                      <li class="my-1 border-t border-gray-100"></li>
                                 }
                                 <li><a asp-controller="Booking" asp-action="MyBookings" class="py-3">My Trips</a></li>

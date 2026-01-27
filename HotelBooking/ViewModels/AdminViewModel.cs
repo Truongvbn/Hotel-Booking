@@ -147,3 +147,21 @@ public class RoomBulkCreateViewModel
     public int Quantity { get; set; } = 1;
     public int Floor { get; set; } = 1;
 }
+
+public class AdminRoomTypeListViewModel
+{
+    public int HotelId { get; set; }
+    public string HotelName { get; set; } = string.Empty;
+    public IEnumerable<AdminRoomTypeItemViewModel> RoomTypes { get; set; } = new List<AdminRoomTypeItemViewModel>();
+}
+
+public class AdminRoomTypeItemViewModel
+{
+    public int RoomTypeId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public int Capacity { get; set; }
+    public decimal BasePrice { get; set; }
+    public string? ImageUrl { get; set; }
+    public int RoomCount { get; set; }
+}

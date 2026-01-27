@@ -7,7 +7,7 @@ using DataAccess.Models;
 
 namespace HotelBooking.Controllers;
 
-[Authorize(Roles = "Admin,HotelOwner")]
+[Authorize(Roles = "Admin")]
 public class AdminController : Controller
 {
     private readonly IHotelService _hotelService;
@@ -27,16 +27,7 @@ public class AdminController : Controller
         _userService = userService;
     }
 
-    // Helper: Check if current user is Admin
-    private bool IsAdmin => User.IsInRole("Admin");
-    
-    // Helper: Get current user's HotelId (for HotelOwner)
-    private async Task<int?> GetUserHotelIdAsync()
-    {
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var user = await _userService.GetByIdAsync(userId);
-        return user?.HotelId;
-    }
+
 
     // GET: /Admin/Dashboard
     [HttpGet]
@@ -44,47 +35,64 @@ public class AdminController : Controller
     {
         IEnumerable<Hotel> hotels;
         
-        if (IsAdmin)
-        {
-            hotels = await _hotelService.GetAllHotelsAsync();
-        }
-        else
-        {
-            // HotelOwner: only their hotel
-            var hotelId = await GetUserHotelIdAsync();
-            if (!hotelId.HasValue)
-            {
-                TempData["Error"] = "You are not assigned to any hotel.";
-                return RedirectToAction("Index", "Home");
-            }
-            var hotel = await _hotelService.GetHotelDetailsAsync(hotelId.Value);
-            hotels = hotel != null ? new[] { hotel } : Array.Empty<Hotel>();
-        }
+        hotels = await _hotelService.GetAllHotelsAsync();
 
         var totalRooms = 0;
-        var availableRooms = 0;
-        var occupiedRooms = 0;
+    var availableRooms = 0;
+    var occupiedRooms = 0;
+    var totalBookings = 0;
+    var pendingBookings = 0;
+    var todayCheckIns = 0;
+    var todayCheckOuts = 0;
+    decimal totalRevenue = 0;
+    var recentBookings = new List<Booking>();
 
-        foreach (var hotel in hotels)
-        {
-            var rooms = await _roomService.GetHotelRoomsAsync(hotel.HotelId);
-            totalRooms += rooms.Count();
-            availableRooms += rooms.Count(r => r.Status == "Available");
-            occupiedRooms += rooms.Count(r => r.Status == "Occupied");
-        }
+    foreach (var hotel in hotels)
+    {
+        var rooms = await _roomService.GetHotelRoomsAsync(hotel.HotelId);
+        totalRooms += rooms.Count();
+        availableRooms += rooms.Count(r => r.Status == "Available");
+        occupiedRooms += rooms.Count(r => r.Status == "Occupied");
 
-        var model = new DashboardViewModel
-        {
-            TotalHotels = hotels.Count(),
-            TotalRooms = totalRooms,
-            AvailableRooms = availableRooms,
-            OccupiedRooms = occupiedRooms,
-            OccupancyRate = totalRooms > 0 ? (decimal)occupiedRooms / totalRooms * 100 : 0
-        };
-
-        ViewBag.IsAdmin = IsAdmin;
-        return View(model);
+        var bookings = await _bookingService.GetHotelBookingsAsync(hotel.HotelId);
+        totalBookings += bookings.Count();
+        pendingBookings += bookings.Count(b => b.Status == "Pending");
+        todayCheckIns += bookings.Count(b => b.CheckInDate.Date == DateTime.Today && b.Status == "Confirmed");
+        todayCheckOuts += bookings.Count(b => b.CheckOutDate.Date == DateTime.Today && b.Status == "CheckedIn");
+        totalRevenue += bookings.Where(b => b.Status != "Cancelled").Sum(b => b.TotalPrice);
+        
+        recentBookings.AddRange(bookings);
     }
+
+    var model = new DashboardViewModel
+    {
+        TotalHotels = hotels.Count(),
+        TotalRooms = totalRooms,
+        AvailableRooms = availableRooms,
+        OccupiedRooms = occupiedRooms,
+        TotalBookings = totalBookings,
+        PendingBookings = pendingBookings,
+        TodayCheckIns = todayCheckIns,
+        TodayCheckOuts = todayCheckOuts,
+        TotalRevenue = totalRevenue,
+        OccupancyRate = totalRooms > 0 ? (decimal)occupiedRooms / totalRooms * 100 : 0,
+        RecentBookings = recentBookings
+            .OrderByDescending(b => b.CreatedDate)
+            .Take(5)
+            .Select(b => new BookingItemViewModel
+            {
+                BookingId = b.BookingId,
+                HotelName = b.Room.RoomType.Hotel.Name,
+                RoomTypeName = b.Room.RoomType.Name,
+                CheckInDate = b.CheckInDate,
+                CheckOutDate = b.CheckOutDate,
+                TotalPrice = b.TotalPrice,
+                Status = b.Status
+            })
+    };
+
+    return View(model);
+}
 
     #region Hotels Management
 
@@ -94,21 +102,7 @@ public class AdminController : Controller
     {
         IEnumerable<Hotel> hotels;
         
-        if (IsAdmin)
-        {
-            hotels = await _hotelService.GetAllHotelsAsync();
-        }
-        else
-        {
-            var hotelId = await GetUserHotelIdAsync();
-            if (!hotelId.HasValue)
-            {
-                TempData["Error"] = "You are not assigned to any hotel.";
-                return RedirectToAction("Dashboard");
-            }
-            var hotel = await _hotelService.GetHotelDetailsAsync(hotelId.Value);
-            hotels = hotel != null ? new[] { hotel } : Array.Empty<Hotel>();
-        }
+        hotels = await _hotelService.GetAllHotelsAsync();
         
         var model = new AdminHotelListViewModel
         {
@@ -125,7 +119,7 @@ public class AdminController : Controller
             })
         };
 
-        ViewBag.IsAdmin = IsAdmin;
+
         return View(model);
     }
 
@@ -180,6 +174,8 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> EditHotel(int id)
     {
+
+
         var hotel = await _hotelService.GetHotelDetailsAsync(id);
         if (hotel == null)
         {
@@ -202,6 +198,7 @@ public class AdminController : Controller
             Longitude = hotel.Longitude
         };
 
+
         return View(model);
     }
 
@@ -210,8 +207,11 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditHotel(HotelFormViewModel model)
     {
+
+
         if (!ModelState.IsValid)
         {
+
             return View(model);
         }
 
@@ -240,6 +240,7 @@ public class AdminController : Controller
         catch (Exception ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
+
             return View(model);
         }
     }
@@ -271,6 +272,8 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> Rooms(int hotelId, string? status = null)
     {
+
+
         var hotel = await _hotelService.GetHotelDetailsAsync(hotelId);
         if (hotel == null)
         {
@@ -282,6 +285,8 @@ public class AdminController : Controller
         {
             rooms = rooms.Where(r => r.Status == status);
         }
+
+        var roomTypes = await _roomService.GetRoomTypesByHotelAsync(hotelId);
 
         var model = new AdminRoomListViewModel
         {
@@ -299,6 +304,8 @@ public class AdminController : Controller
                 Capacity = r.RoomType.Capacity
             })
         };
+
+        ViewBag.RoomTypes = roomTypes;
 
         return View(model);
     }
@@ -321,6 +328,185 @@ public class AdminController : Controller
         return RedirectToAction("Rooms", new { hotelId });
     }
 
+    // POST: /Admin/CreateRooms - Bulk create rooms
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateRooms(RoomBulkCreateViewModel model)
+    {
+        try
+        {
+            await _roomService.AddRoomsBulkAsync(model.RoomTypeId, model.StartingNumber, model.Quantity, model.Floor);
+            TempData["Success"] = $"Successfully created {model.Quantity} room(s)!";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction("Rooms", new { hotelId = model.HotelId });
+    }
+
+    // POST: /Admin/DeleteRoom
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteRoom(int roomId, int hotelId)
+    {
+        try
+        {
+            await _roomService.DeleteRoomAsync(roomId);
+            TempData["Success"] = "Room deleted successfully!";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction("Rooms", new { hotelId });
+    }
+
+    #endregion
+
+    #region RoomTypes Management
+
+    // GET: /Admin/RoomTypes/5
+    [HttpGet]
+    public async Task<IActionResult> RoomTypes(int hotelId)
+    {
+
+
+        var hotel = await _hotelService.GetHotelDetailsAsync(hotelId);
+        if (hotel == null)
+        {
+            return NotFound();
+        }
+
+        var roomTypes = await _roomService.GetRoomTypesByHotelAsync(hotelId);
+
+        ViewBag.HotelId = hotelId;
+        ViewBag.HotelName = hotel.Name;
+
+        return View(roomTypes);
+    }
+
+    // GET: /Admin/CreateRoomType
+    [HttpGet]
+    public async Task<IActionResult> CreateRoomType(int hotelId)
+    {
+        var hotel = await _hotelService.GetHotelDetailsAsync(hotelId);
+        if (hotel == null) return NotFound();
+
+        var model = new RoomTypeFormViewModel
+        {
+            HotelId = hotelId
+        };
+
+        ViewBag.HotelName = hotel.Name;
+        return View(model);
+    }
+
+    // POST: /Admin/CreateRoomType
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateRoomType(RoomTypeFormViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var hotel = await _hotelService.GetHotelDetailsAsync(model.HotelId);
+            ViewBag.HotelName = hotel?.Name ?? "";
+            return View(model);
+        }
+
+        try
+        {
+            await _roomService.AddRoomTypeAsync(model.HotelId, model.Name, model.Description, model.Capacity, model.BasePrice);
+            TempData["Success"] = "Room type created successfully!";
+            return RedirectToAction("RoomTypes", new { hotelId = model.HotelId });
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            var hotel = await _hotelService.GetHotelDetailsAsync(model.HotelId);
+            ViewBag.HotelName = hotel?.Name ?? "";
+            return View(model);
+        }
+    }
+
+    // GET: /Admin/EditRoomType/5
+    [HttpGet]
+    public async Task<IActionResult> EditRoomType(int id)
+    {
+        var roomTypes = await _roomService.GetRoomTypesByHotelAsync(0); // We need to get by ID
+        // For now, get all room types and filter - should optimize later
+        var hotels = await _hotelService.GetAllHotelsAsync();
+        RoomType? roomType = null;
+        Hotel? hotel = null;
+
+        foreach (var h in hotels)
+        {
+            var types = await _roomService.GetRoomTypesByHotelAsync(h.HotelId);
+            roomType = types.FirstOrDefault(rt => rt.RoomTypeId == id);
+            if (roomType != null)
+            {
+                hotel = h;
+                break;
+            }
+        }
+
+        if (roomType == null) return NotFound();
+
+        var model = new RoomTypeFormViewModel
+        {
+            RoomTypeId = roomType.RoomTypeId,
+            HotelId = roomType.HotelId,
+            Name = roomType.Name,
+            Description = roomType.Description,
+            Capacity = roomType.Capacity,
+            BasePrice = roomType.BasePrice,
+            ImageUrl = roomType.ImageUrl
+        };
+
+        ViewBag.HotelName = hotel?.Name ?? "";
+        return View(model);
+    }
+
+    // POST: /Admin/EditRoomType
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditRoomType(RoomTypeFormViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var hotel = await _hotelService.GetHotelDetailsAsync(model.HotelId);
+            ViewBag.HotelName = hotel?.Name ?? "";
+            return View(model);
+        }
+
+        try
+        {
+            var roomType = new RoomType
+            {
+                RoomTypeId = model.RoomTypeId,
+                HotelId = model.HotelId,
+                Name = model.Name,
+                Description = model.Description,
+                Capacity = model.Capacity,
+                BasePrice = model.BasePrice,
+                ImageUrl = model.ImageUrl
+            };
+
+            await _roomService.UpdateRoomTypeAsync(roomType);
+            TempData["Success"] = "Room type updated successfully!";
+            return RedirectToAction("RoomTypes", new { hotelId = model.HotelId });
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            var hotel = await _hotelService.GetHotelDetailsAsync(model.HotelId);
+            ViewBag.HotelName = hotel?.Name ?? "";
+            return View(model);
+        }
+    }
+
     #endregion
 
     #region Bookings Management
@@ -332,17 +518,7 @@ public class AdminController : Controller
         IEnumerable<Booking> bookings;
         string? hotelName = null;
 
-        // For HotelOwner, force filter to their hotel only
-        if (!IsAdmin)
-        {
-            var userHotelId = await GetUserHotelIdAsync();
-            if (!userHotelId.HasValue)
-            {
-                TempData["Error"] = "You are not assigned to any hotel.";
-                return RedirectToAction("Dashboard");
-            }
-            hotelId = userHotelId.Value;
-        }
+
 
         if (hotelId.HasValue)
         {
@@ -392,7 +568,7 @@ public class AdminController : Controller
             })
         };
 
-        ViewBag.IsAdmin = IsAdmin;
+
         return View(model);
     }
 

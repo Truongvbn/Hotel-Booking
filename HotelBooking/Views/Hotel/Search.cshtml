@@ -57,7 +57,7 @@
         <div class="grid grid-cols-1 gap-8 max-w-5xl mx-auto">
             @foreach (var hotel in Model.Hotels)
             {
-                <div class="group flex flex-col md:flex-row bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
+                <div class="group flex flex-col md:flex-row bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 relative">
                     <!-- Image -->
                     <div class="relative md:w-2/5 h-64 md:h-auto overflow-hidden">
                         @if (!string.IsNullOrEmpty(hotel.ImageUrl))

@@ -13,7 +13,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? "Server=(localdb)\\mssqllocaldb;Database=HotelBookingDB;Trusted_Connection=True;MultipleActiveResultSets=true";
 
 builder.Services.AddDbContext<HotelBookingContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 // Register Repositories (Data Layer)
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

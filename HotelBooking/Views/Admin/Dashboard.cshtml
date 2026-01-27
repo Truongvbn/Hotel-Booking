@@ -3,91 +3,151 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="flex justify-between items-center mb-8">
-    <h1 class="text-3xl font-bold">Dashboard</h1>
-    <div class="text-base-content/70">Welcome back, Admin!</div>
-</div>
+<div class="max-w-7xl mx-auto py-8 px-4">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+            <p class="text-sm text-gray-500 mt-1">Overview of your business performance.</p>
+        </div>
+        <div class="flex items-center gap-2 bg-white rounded-lg border p-1 shadow-sm">
+            <button class="px-3 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-900">Today</button>
+            <button class="px-3 py-1 text-xs font-medium rounded-md text-gray-500 hover:text-gray-900">7 days</button>
+            <button class="px-3 py-1 text-xs font-medium rounded-md text-gray-500 hover:text-gray-900">30 days</button>
+        </div>
+    </div>
 
-<!-- Stats Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="stat bg-base-100 shadow rounded-box">
-        <div class="stat-figure text-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Revenue/Hotels Card -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Hotels</p>
+                    <h3 class="text-2xl font-bold text-gray-900 mt-2">@Model.TotalHotels</h3>
+                </div>
+                <div class="p-2 bg-rose-50 rounded-lg">
+                    <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-sm">
+                <span class="text-green-600 font-medium flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                    2.1%
+                </span>
+                <span class="text-gray-400 ml-2">from last month</span>
+            </div>
         </div>
-        <div class="stat-title">Total Hotels</div>
-        <div class="stat-value text-primary">@Model.TotalHotels</div>
-    </div>
-    
-    <div class="stat bg-base-100 shadow rounded-box">
-        <div class="stat-figure text-secondary">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-        </div>
-        <div class="stat-title">Total Rooms</div>
-        <div class="stat-value text-secondary">@Model.TotalRooms</div>
-        <div class="stat-desc">@Model.AvailableRooms available / @Model.OccupiedRooms occupied</div>
-    </div>
-    
-    <div class="stat bg-base-100 shadow rounded-box">
-        <div class="stat-figure text-success">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-        </div>
-        <div class="stat-title">Occupancy Rate</div>
-        <div class="stat-value text-success">@Model.OccupancyRate.ToString("F1")%</div>
-    </div>
-    
-    <div class="stat bg-base-100 shadow rounded-box">
-        <div class="stat-figure text-warning">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-        </div>
-        <div class="stat-title">Pending Bookings</div>
-        <div class="stat-value text-warning">@Model.PendingBookings</div>
-    </div>
-</div>
 
-<!-- Quick Actions -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <a asp-action="Hotels" class="card bg-primary text-primary-content hover:bg-primary-focus transition-colors cursor-pointer">
-        <div class="card-body">
-            <h2 class="card-title">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-                Manage Hotels
-            </h2>
-            <p>Add, edit, or remove hotels</p>
+        <!-- Metric Card -->
+         <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Occupancy Rate</p>
+                    <h3 class="text-2xl font-bold text-gray-900 mt-2">@Model.OccupancyRate.ToString("F1")%</h3>
+                </div>
+                <div class="p-2 bg-blue-50 rounded-lg">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-sm">
+                 <div class="w-full bg-gray-100 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full" style="width: @Model.OccupancyRate%"></div>
+                 </div>
+            </div>
         </div>
-    </a>
-    
-    <a asp-action="Bookings" class="card bg-secondary text-secondary-content hover:bg-secondary-focus transition-colors cursor-pointer">
-        <div class="card-body">
-            <h2 class="card-title">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                Manage Bookings
-            </h2>
-            <p>View and manage all bookings</p>
+
+        <!-- Metric Card -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pending Orders</p>
+                    <h3 class="text-2xl font-bold text-gray-900 mt-2">@Model.PendingBookings</h3>
+                </div>
+                <div class="p-2 bg-yellow-50 rounded-lg">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+            </div>
+             <div class="mt-4 flex items-center text-sm">
+                <span class="text-yellow-600 font-medium">Requires attention</span>
+            </div>
         </div>
-    </a>
-    
-    <a asp-controller="Home" asp-action="Index" class="card bg-accent text-accent-content hover:bg-accent-focus transition-colors cursor-pointer">
-        <div class="card-body">
-            <h2 class="card-title">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                View Website
-            </h2>
-            <p>See public website</p>
+
+        <!-- Metric Card -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Rooms</p>
+                    <h3 class="text-2xl font-bold text-gray-900 mt-2">@Model.TotalRooms</h3>
+                </div>
+                <div class="p-2 bg-teal-50 rounded-lg">
+                    <svg class="w-6 h-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-sm">
+                <span class="text-gray-500">@Model.AvailableRooms Available / @Model.OccupiedRooms Occupied</span>
+            </div>
         </div>
-    </a>
+    </div>
+
+    <!-- Quick Actions & recent -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Quick Actions -->
+        <div>
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
+            <div class="space-y-4">
+                 <a asp-action="Hotels" class="block p-4 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow group">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
+                            <svg class="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">Manage Hotels</h3>
+                            <p class="text-sm text-gray-500">View performance or add new properties</p>
+                        </div>
+                        <div class="ml-auto">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </div>
+                    </div>
+                </a>
+
+                <a asp-action="Bookings" class="block p-4 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow group">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">Manage Bookings</h3>
+                            <p class="text-sm text-gray-500">Review pending reservations</p>
+                        </div>
+                         <div class="ml-auto">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activity Placeholder -->
+        <div>
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Recent Activity</h2>
+            <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                <div class="p-4 border-b border-gray-100 flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                    <p class="text-sm"><span class="font-bold text-gray-900">New Booking</span> <span class="text-gray-500">#BK-10293</span></p>
+                    <span class="ml-auto text-xs text-gray-400">2 min ago</span>
+                </div>
+                 <div class="p-4 border-b border-gray-100 flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                    <p class="text-sm"><span class="font-bold text-gray-900">New User</span> <span class="text-gray-500">sarah@gmail.com</span></p>
+                    <span class="ml-auto text-xs text-gray-400">15 min ago</span>
+                </div>
+                 <div class="p-4 flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+                    <p class="text-sm"><span class="font-bold text-gray-900">Review</span> <span class="text-gray-500">5 stars for Luxury Villa</span></p>
+                    <span class="ml-auto text-xs text-gray-400">1 hr ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

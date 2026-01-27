@@ -8,10 +8,12 @@ using Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add DbContext with SQLite (no SQL Server required)
-var dbPath = Path.Combine(builder.Environment.ContentRootPath, "hotel_booking.db");
+// Get connection string from configuration
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Add DbContext with PostgreSQL (Supabase)
 builder.Services.AddDbContext<HotelBookingContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}"));
+    options.UseNpgsql(connectionString));
 
 // Register Repositories (Data Layer)
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -42,13 +44,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
-
-// Ensure database is created and seeded
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<HotelBookingContext>();
-    db.Database.EnsureCreated();
-}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

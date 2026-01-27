@@ -27,15 +27,21 @@ public class HotelBookingContext : DbContext
         // User configuration
         modelBuilder.Entity<User>(entity =>
         {
+            entity.ToTable("users");
             entity.HasKey(e => e.UserId);
+            entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.HasIndex(e => e.Email).IsUnique();
-            entity.Property(e => e.Email).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.Password).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.FirstName).HasMaxLength(100);
-            entity.Property(e => e.LastName).HasMaxLength(100);
-            entity.Property(e => e.PhoneNumber).HasMaxLength(20);
-            entity.Property(e => e.Address).HasMaxLength(255);
-            entity.Property(e => e.Role).HasMaxLength(20).HasDefaultValue("Customer");
+            entity.Property(e => e.Email).HasColumnName("email").HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Password).HasColumnName("password").HasMaxLength(100).IsRequired();
+            entity.Property(e => e.FirstName).HasColumnName("first_name").HasMaxLength(100);
+            entity.Property(e => e.LastName).HasColumnName("last_name").HasMaxLength(100);
+            entity.Property(e => e.PhoneNumber).HasColumnName("phone_number").HasMaxLength(20);
+            entity.Property(e => e.Address).HasColumnName("address").HasMaxLength(255);
+            entity.Property(e => e.Role).HasColumnName("role").HasMaxLength(20).HasDefaultValue("Customer");
+            entity.Property(e => e.HotelId).HasColumnName("hotel_id");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.Property(e => e.CreatedDate).HasColumnName("created_date");
+            entity.Property(e => e.UpdatedDate).HasColumnName("updated_date");
             
             // HotelOwner relationship
             entity.HasOne(e => e.Hotel)
@@ -47,24 +53,40 @@ public class HotelBookingContext : DbContext
         // Hotel configuration
         modelBuilder.Entity<Hotel>(entity =>
         {
+            entity.ToTable("hotel");
             entity.HasKey(e => e.HotelId);
-            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
-            entity.Property(e => e.Address).HasMaxLength(255);
-            entity.Property(e => e.City).HasMaxLength(100);
-            entity.Property(e => e.Country).HasMaxLength(100);
-            entity.Property(e => e.StarRating).HasPrecision(2, 1);
-            entity.Property(e => e.Latitude).HasPrecision(10, 7);
-            entity.Property(e => e.Longitude).HasPrecision(10, 7);
-            entity.Property(e => e.Phone).HasMaxLength(20);
-            entity.Property(e => e.Website).HasMaxLength(200);
+            entity.Property(e => e.HotelId).HasColumnName("hotel_id");
+            entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Address).HasColumnName("address").HasMaxLength(255);
+            entity.Property(e => e.City).HasColumnName("city").HasMaxLength(100);
+            entity.Property(e => e.Country).HasColumnName("country").HasMaxLength(100);
+            entity.Property(e => e.StarRating).HasColumnName("star_rating").HasPrecision(2, 1);
+            entity.Property(e => e.Latitude).HasColumnName("latitude").HasPrecision(10, 7);
+            entity.Property(e => e.Longitude).HasColumnName("longitude").HasPrecision(10, 7);
+            entity.Property(e => e.Phone).HasColumnName("phone").HasMaxLength(20);
+            entity.Property(e => e.Website).HasColumnName("website").HasMaxLength(200);
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.ImageUrl).HasColumnName("image_url");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.Property(e => e.CreatedDate).HasColumnName("created_date");
+            entity.Property(e => e.UpdatedDate).HasColumnName("updated_date");
         });
 
         // RoomType configuration
         modelBuilder.Entity<RoomType>(entity =>
         {
+            entity.ToTable("room_type");
             entity.HasKey(e => e.RoomTypeId);
-            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.BasePrice).HasPrecision(10, 2);
+            entity.Property(e => e.RoomTypeId).HasColumnName("room_type_id");
+            entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.Capacity).HasColumnName("capacity");
+            entity.Property(e => e.BasePrice).HasColumnName("base_price").HasPrecision(10, 2);
+            entity.Property(e => e.ImageUrl).HasColumnName("image_url");
+            entity.Property(e => e.HotelId).HasColumnName("hotel_id");
+            entity.Property(e => e.CreatedDate).HasColumnName("created_date");
+            entity.Property(e => e.UpdatedDate).HasColumnName("updated_date");
+
             entity.HasOne(e => e.Hotel)
                   .WithMany(h => h.RoomTypes)
                   .HasForeignKey(e => e.HotelId)
@@ -74,10 +96,17 @@ public class HotelBookingContext : DbContext
         // Room configuration
         modelBuilder.Entity<Room>(entity =>
         {
+            entity.ToTable("room");
             entity.HasKey(e => e.RoomId);
+            entity.Property(e => e.RoomId).HasColumnName("room_id");
             entity.HasIndex(e => e.RoomNumber).IsUnique();
-            entity.Property(e => e.RoomNumber).HasMaxLength(50);
-            entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue("Available");
+            entity.Property(e => e.RoomNumber).HasColumnName("room_number").HasMaxLength(50);
+            entity.Property(e => e.Floor).HasColumnName("floor");
+            entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(20).HasDefaultValue("Available");
+            entity.Property(e => e.RoomTypeId).HasColumnName("room_type_id");
+            entity.Property(e => e.CreatedDate).HasColumnName("created_date");
+            entity.Property(e => e.UpdatedDate).HasColumnName("updated_date");
+
             entity.HasOne(e => e.RoomType)
                   .WithMany(rt => rt.Rooms)
                   .HasForeignKey(e => e.RoomTypeId)
@@ -87,9 +116,19 @@ public class HotelBookingContext : DbContext
         // Booking configuration
         modelBuilder.Entity<Booking>(entity =>
         {
+            entity.ToTable("booking");
             entity.HasKey(e => e.BookingId);
-            entity.Property(e => e.TotalPrice).HasPrecision(10, 2);
-            entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue("Pending");
+            entity.Property(e => e.BookingId).HasColumnName("booking_id");
+            entity.Property(e => e.TotalPrice).HasColumnName("total_price").HasPrecision(10, 2);
+            entity.Property(e => e.CheckInDate).HasColumnName("check_in_date");
+            entity.Property(e => e.CheckOutDate).HasColumnName("check_out_date");
+            entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(20).HasDefaultValue("Pending");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.RoomId).HasColumnName("room_id");
+            entity.Property(e => e.CheckInDate).HasColumnName("check_in_date");
+            entity.Property(e => e.CreatedDate).HasColumnName("created_date");
+            entity.Property(e => e.UpdatedDate).HasColumnName("updated_date");
+
             entity.HasOne(e => e.User)
                   .WithMany(u => u.Bookings)
                   .HasForeignKey(e => e.UserId)
@@ -108,12 +147,16 @@ public class HotelBookingContext : DbContext
         // Payment configuration
         modelBuilder.Entity<Payment>(entity =>
         {
+            entity.ToTable("payment");
             entity.HasKey(e => e.PaymentId);
+            entity.Property(e => e.PaymentId).HasColumnName("payment_id");
             entity.HasIndex(e => e.BookingId).IsUnique();
-            entity.Property(e => e.Amount).HasPrecision(10, 2);
-            entity.Property(e => e.PaymentMethod).HasMaxLength(50);
-            entity.Property(e => e.TransactionId).HasMaxLength(100);
-            entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue("Pending");
+            entity.Property(e => e.BookingId).HasColumnName("booking_id");
+            entity.Property(e => e.Amount).HasColumnName("amount").HasPrecision(10, 2);
+            entity.Property(e => e.PaymentDate).HasColumnName("payment_date");
+            entity.Property(e => e.PaymentMethod).HasColumnName("payment_method").HasMaxLength(50);
+            entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(20).HasDefaultValue("Pending");
+
             entity.HasOne(e => e.Booking)
                   .WithOne(b => b.Payment)
                   .HasForeignKey<Payment>(e => e.BookingId)
@@ -123,7 +166,16 @@ public class HotelBookingContext : DbContext
         // Review configuration
         modelBuilder.Entity<Review>(entity =>
         {
+            entity.ToTable("review");
             entity.HasKey(e => e.ReviewId);
+            entity.Property(e => e.ReviewId).HasColumnName("review_id");
+            entity.Property(e => e.Rating).HasColumnName("rating");
+            entity.Property(e => e.Comment).HasColumnName("comment");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.HotelId).HasColumnName("hotel_id");
+            entity.Property(e => e.BookingId).HasColumnName("booking_id");
+            entity.Property(e => e.CreatedDate).HasColumnName("created_date");
+
             entity.HasOne(e => e.Booking)
                   .WithOne(b => b.Review)
                   .HasForeignKey<Review>(e => e.BookingId)
@@ -142,16 +194,21 @@ public class HotelBookingContext : DbContext
         // Amenity configuration
         modelBuilder.Entity<Amenity>(entity =>
         {
+            entity.ToTable("amenity");
             entity.HasKey(e => e.AmenityId);
-            entity.Property(e => e.Name).HasMaxLength(100);
-            entity.Property(e => e.Description).HasMaxLength(255);
-            entity.Property(e => e.Icon).HasMaxLength(50);
+            entity.Property(e => e.AmenityId).HasColumnName("amenity_id");
+            entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(100);
+            entity.Property(e => e.Icon).HasColumnName("icon").HasMaxLength(50);
         });
 
         // RoomAmenity (Many-to-Many) configuration
         modelBuilder.Entity<RoomAmenity>(entity =>
         {
+            entity.ToTable("room_amenity");
             entity.HasKey(e => new { e.RoomId, e.AmenityId });
+            entity.Property(e => e.RoomId).HasColumnName("room_id");
+            entity.Property(e => e.AmenityId).HasColumnName("amenity_id");
+
             entity.HasOne(e => e.Room)
                   .WithMany(r => r.RoomAmenities)
                   .HasForeignKey(e => e.RoomId)

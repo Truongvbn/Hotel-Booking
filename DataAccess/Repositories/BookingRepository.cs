@@ -55,6 +55,7 @@ public class BookingRepository : Repository<Booking>, IBookingRepository
             .Include(b => b.User)
             .Include(b => b.Room)
                 .ThenInclude(r => r.RoomType)
+                    .ThenInclude(rt => rt.Hotel)
             .Where(b => b.Room.RoomType.HotelId == hotelId)
             .OrderByDescending(b => b.CheckInDate)
             .ToListAsync();

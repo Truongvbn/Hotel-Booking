@@ -134,6 +134,7 @@ public class BookingController : Controller
         {
             BookingId = booking.BookingId,
             HotelName = booking.Room.RoomType.Hotel.Name,
+            City = booking.Room.RoomType.Hotel.City ?? "Unknown City",
             RoomTypeName = booking.Room.RoomType.Name,
             RoomNumber = booking.Room.RoomNumber,
             CheckInDate = booking.CheckInDate,
@@ -160,7 +161,8 @@ public class BookingController : Controller
             Bookings = bookings.Select(b => new BookingItemViewModel
             {
                 BookingId = b.BookingId,
-                HotelName = b.Room.RoomType.Hotel.Name,
+                HotelName = b.Room.RoomType.Hotel.Name ?? "Unknown Hotel",
+                City = b.Room.RoomType.Hotel.City ?? "Unknown City",
                 RoomTypeName = b.Room.RoomType.Name,
                 RoomNumber = b.Room.RoomNumber,
                 CheckInDate = b.CheckInDate,

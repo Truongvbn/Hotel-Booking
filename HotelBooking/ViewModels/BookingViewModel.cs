@@ -40,6 +40,7 @@ public class BookingConfirmationViewModel
 {
     public int BookingId { get; set; }
     public string HotelName { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
     public string RoomTypeName { get; set; } = string.Empty;
     public string RoomNumber { get; set; } = string.Empty;
     public DateTime CheckInDate { get; set; }
@@ -60,6 +61,7 @@ public class BookingItemViewModel
 {
     public int BookingId { get; set; }
     public string HotelName { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
     public string RoomTypeName { get; set; } = string.Empty;
     public string RoomNumber { get; set; } = string.Empty;
     public DateTime CheckInDate { get; set; }

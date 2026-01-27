@@ -1,0 +1,184 @@
+@model HotelBooking.ViewModels.AdminBookingListViewModel
+@{
+    ViewData["Title"] = "Hotel Bookings";
+}
+
+<div class="max-w-7xl mx-auto py-8 px-4">
+    <!-- Breadcrumb -->
+    <nav class="text-sm mb-6">
+        <ol class="flex items-center gap-2 text-gray-500">
+            <li><a asp-action="Dashboard" class="hover:text-primary">Dashboard</a></li>
+            <li>/</li>
+            <li class="text-gray-900 font-medium">Bookings</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900">Reservations</h1>
+            <p class="text-gray-500 mt-1">Manage guest bookings for @Model.HotelName</p>
+        </div>
+        <div class="flex gap-2">
+            <!-- Export or other actions could go here -->
+        </div>
+    </div>
+
+    <!-- Stats Review (Optional, keeping simple) -->
+    
+    <!-- Filters -->
+    <div class="bg-white p-4 rounded-t-xl border border-gray-200 border-b-0">
+        <form method="get" class="flex flex-col md:flex-row gap-4 items-end">
+            <div class="w-full md:w-auto">
+                <label class="block text-xs font-medium text-gray-500 mb-1">Filter by Status</label>
+                <select name="status" class="select select-bordered w-full md:w-48 bg-white text-gray-900" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="Pending" selected="@(Model.StatusFilter == "Pending")">Pending</option>
+                    <option value="Confirmed" selected="@(Model.StatusFilter == "Confirmed")">Confirmed</option>
+                    <option value="CheckedIn" selected="@(Model.StatusFilter == "CheckedIn")">Checked In</option>
+                    <option value="CheckedOut" selected="@(Model.StatusFilter == "CheckedOut")">Checked Out</option>
+                    <option value="Cancelled" selected="@(Model.StatusFilter == "Cancelled")">Cancelled</option>
+                </select>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.StatusFilter))
+            {
+                <a asp-action="Bookings" class="btn btn-ghost btn-sm">Clear Filter</a>
+            }
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white border border-gray-200 rounded-b-xl shadow-sm overflow-hidden">
+        @if (!Model.Bookings.Any())
+        {
+            <div class="text-center py-16">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">No bookings found</h3>
+                <p class="text-gray-500">Wait for guests to make reservations.</p>
+            </div>
+        }
+        else
+        {
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guest</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                            <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach (var booking in Model.Bookings)
+                        {
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs mr-3">
+                                            @booking.GuestName.Substring(0, 1)
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">@booking.GuestName</div>
+                                            <div class="text-xs text-gray-500">@booking.GuestEmail</div>
+                                        </div>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(booking.SpecialRequests))
+                                    {
+                                        <div class="mt-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded inline-block max-w-[200px] truncate" title="@booking.SpecialRequests">
+                                            Req: @booking.SpecialRequests
+                                        </div>
+                                    }
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">@booking.RoomTypeName</div>
+                                    <div class="text-xs text-gray-500">Room @booking.RoomNumber (@booking.GuestCount guests)</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">@booking.CheckInDate.ToString("MMM dd") - @booking.CheckOutDate.ToString("MMM dd")</div>
+                                    <div class="text-xs text-gray-500">@((int)(booking.CheckOutDate - booking.CheckInDate).TotalDays) nights</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @{
+                                        var badgeClass = booking.Status switch
+                                        {
+                                            "Pending" => "badge-warning",
+                                            "Confirmed" => "badge-info",
+                                            "CheckedIn" => "badge-success",
+                                            "CheckedOut" => "badge-ghost",
+                                            "Cancelled" => "badge-error",
+                                            _ => "badge-ghost"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass gap-1">
+                                        @if (booking.Status == "Confirmed") { <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> }
+                                        @booking.Status
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                    @booking.TotalPrice.ToString("N0")₫
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    @if (booking.Status != "Cancelled" && booking.Status != "CheckedOut")
+                                    {
+                                        <div class="dropdown dropdown-end">
+                                            <label tabindex="0" class="btn btn-ghost btn-sm btn-circle">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                                </svg>
+                                            </label>
+                                            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-white rounded-xl w-48 border border-gray-100">
+                                                @if (booking.Status == "Pending")
+                                                {
+                                                    <li>
+                                                        <form asp-action="ConfirmBooking" method="post">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="id" value="@booking.BookingId" />
+                                                            <button type="submit" class="text-left w-full text-blue-600">Confirm Booking</button>
+                                                        </form>
+                                                    </li>
+                                                }
+                                                @if (booking.Status == "Confirmed")
+                                                {
+                                                    <li>
+                                                        <form asp-action="CheckIn" method="post">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="id" value="@booking.BookingId" />
+                                                            <button type="submit" class="text-left w-full text-green-600">Check In Guest</button>
+                                                        </form>
+                                                    </li>
+                                                }
+                                                @if (booking.Status == "CheckedIn")
+                                                {
+                                                    <li>
+                                                        <form asp-action="CheckOut" method="post">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="id" value="@booking.BookingId" />
+                                                            <button type="submit" class="text-left w-full text-gray-600">Check Out Guest</button>
+                                                        </form>
+                                                    </li>
+                                                }
+                                                <div class="divider my-1"></div>
+                                                <li>
+                                                    <form asp-action="CancelBooking" method="post" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@booking.BookingId" />
+                                                        <button type="submit" class="text-left w-full text-error">Cancel Booking</button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

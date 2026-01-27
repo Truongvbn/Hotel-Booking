@@ -13,3 +13,8 @@ package-lock.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Agent/IDE
+.agent/
+.shared/
+CLAUDE.md

@@ -180,6 +180,16 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> EditHotel(int id)
     {
+        // HotelOwner can only edit their own hotel
+        if (!IsAdmin)
+        {
+            var userHotelId = await GetUserHotelIdAsync();
+            if (!userHotelId.HasValue || userHotelId.Value != id)
+            {
+                return Forbid();
+            }
+        }
+
         var hotel = await _hotelService.GetHotelDetailsAsync(id);
         if (hotel == null)
         {
@@ -202,6 +212,7 @@ public class AdminController : Controller
             Longitude = hotel.Longitude
         };
 
+        ViewBag.IsAdmin = IsAdmin;
         return View(model);
     }
 
@@ -210,8 +221,19 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditHotel(HotelFormViewModel model)
     {
+        // HotelOwner can only edit their own hotel
+        if (!IsAdmin)
+        {
+            var userHotelId = await GetUserHotelIdAsync();
+            if (!userHotelId.HasValue || userHotelId.Value != model.HotelId)
+            {
+                return Forbid();
+            }
+        }
+
         if (!ModelState.IsValid)
         {
+            ViewBag.IsAdmin = IsAdmin;
             return View(model);
         }
 
@@ -240,6 +262,7 @@ public class AdminController : Controller
         catch (Exception ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
+            ViewBag.IsAdmin = IsAdmin;
             return View(model);
         }
     }
@@ -271,6 +294,16 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> Rooms(int hotelId, string? status = null)
     {
+        // HotelOwner can only view their own hotel's rooms
+        if (!IsAdmin)
+        {
+            var userHotelId = await GetUserHotelIdAsync();
+            if (!userHotelId.HasValue || userHotelId.Value != hotelId)
+            {
+                return Forbid();
+            }
+        }
+
         var hotel = await _hotelService.GetHotelDetailsAsync(hotelId);
         if (hotel == null)
         {
@@ -282,6 +315,8 @@ public class AdminController : Controller
         {
             rooms = rooms.Where(r => r.Status == status);
         }
+
+        var roomTypes = await _roomService.GetRoomTypesByHotelAsync(hotelId);
 
         var model = new AdminRoomListViewModel
         {
@@ -300,6 +335,8 @@ public class AdminController : Controller
             })
         };
 
+        ViewBag.RoomTypes = roomTypes;
+        ViewBag.IsAdmin = IsAdmin;
         return View(model);
     }
 
@@ -319,6 +356,193 @@ public class AdminController : Controller
         }
 
         return RedirectToAction("Rooms", new { hotelId });
+    }
+
+    // POST: /Admin/CreateRooms - Bulk create rooms
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateRooms(RoomBulkCreateViewModel model)
+    {
+        try
+        {
+            await _roomService.AddRoomsBulkAsync(model.RoomTypeId, model.StartingNumber, model.Quantity, model.Floor);
+            TempData["Success"] = $"Successfully created {model.Quantity} room(s)!";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction("Rooms", new { hotelId = model.HotelId });
+    }
+
+    // POST: /Admin/DeleteRoom
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteRoom(int roomId, int hotelId)
+    {
+        try
+        {
+            await _roomService.DeleteRoomAsync(roomId);
+            TempData["Success"] = "Room deleted successfully!";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction("Rooms", new { hotelId });
+    }
+
+    #endregion
+
+    #region RoomTypes Management
+
+    // GET: /Admin/RoomTypes/5
+    [HttpGet]
+    public async Task<IActionResult> RoomTypes(int hotelId)
+    {
+        // HotelOwner can only view their own hotel's room types
+        if (!IsAdmin)
+        {
+            var userHotelId = await GetUserHotelIdAsync();
+            if (!userHotelId.HasValue || userHotelId.Value != hotelId)
+            {
+                return Forbid();
+            }
+        }
+
+        var hotel = await _hotelService.GetHotelDetailsAsync(hotelId);
+        if (hotel == null)
+        {
+            return NotFound();
+        }
+
+        var roomTypes = await _roomService.GetRoomTypesByHotelAsync(hotelId);
+
+        ViewBag.HotelId = hotelId;
+        ViewBag.HotelName = hotel.Name;
+        ViewBag.IsAdmin = IsAdmin;
+        return View(roomTypes);
+    }
+
+    // GET: /Admin/CreateRoomType
+    [HttpGet]
+    public async Task<IActionResult> CreateRoomType(int hotelId)
+    {
+        var hotel = await _hotelService.GetHotelDetailsAsync(hotelId);
+        if (hotel == null) return NotFound();
+
+        var model = new RoomTypeFormViewModel
+        {
+            HotelId = hotelId
+        };
+
+        ViewBag.HotelName = hotel.Name;
+        return View(model);
+    }
+
+    // POST: /Admin/CreateRoomType
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateRoomType(RoomTypeFormViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var hotel = await _hotelService.GetHotelDetailsAsync(model.HotelId);
+            ViewBag.HotelName = hotel?.Name ?? "";
+            return View(model);
+        }
+
+        try
+        {
+            await _roomService.AddRoomTypeAsync(model.HotelId, model.Name, model.Description, model.Capacity, model.BasePrice);
+            TempData["Success"] = "Room type created successfully!";
+            return RedirectToAction("RoomTypes", new { hotelId = model.HotelId });
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            var hotel = await _hotelService.GetHotelDetailsAsync(model.HotelId);
+            ViewBag.HotelName = hotel?.Name ?? "";
+            return View(model);
+        }
+    }
+
+    // GET: /Admin/EditRoomType/5
+    [HttpGet]
+    public async Task<IActionResult> EditRoomType(int id)
+    {
+        var roomTypes = await _roomService.GetRoomTypesByHotelAsync(0); // We need to get by ID
+        // For now, get all room types and filter - should optimize later
+        var hotels = await _hotelService.GetAllHotelsAsync();
+        RoomType? roomType = null;
+        Hotel? hotel = null;
+
+        foreach (var h in hotels)
+        {
+            var types = await _roomService.GetRoomTypesByHotelAsync(h.HotelId);
+            roomType = types.FirstOrDefault(rt => rt.RoomTypeId == id);
+            if (roomType != null)
+            {
+                hotel = h;
+                break;
+            }
+        }
+
+        if (roomType == null) return NotFound();
+
+        var model = new RoomTypeFormViewModel
+        {
+            RoomTypeId = roomType.RoomTypeId,
+            HotelId = roomType.HotelId,
+            Name = roomType.Name,
+            Description = roomType.Description,
+            Capacity = roomType.Capacity,
+            BasePrice = roomType.BasePrice,
+            ImageUrl = roomType.ImageUrl
+        };
+
+        ViewBag.HotelName = hotel?.Name ?? "";
+        return View(model);
+    }
+
+    // POST: /Admin/EditRoomType
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditRoomType(RoomTypeFormViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var hotel = await _hotelService.GetHotelDetailsAsync(model.HotelId);
+            ViewBag.HotelName = hotel?.Name ?? "";
+            return View(model);
+        }
+
+        try
+        {
+            var roomType = new RoomType
+            {
+                RoomTypeId = model.RoomTypeId,
+                HotelId = model.HotelId,
+                Name = model.Name,
+                Description = model.Description,
+                Capacity = model.Capacity,
+                BasePrice = model.BasePrice,
+                ImageUrl = model.ImageUrl
+            };
+
+            await _roomService.UpdateRoomTypeAsync(roomType);
+            TempData["Success"] = "Room type updated successfully!";
+            return RedirectToAction("RoomTypes", new { hotelId = model.HotelId });
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            var hotel = await _hotelService.GetHotelDetailsAsync(model.HotelId);
+            ViewBag.HotelName = hotel?.Name ?? "";
+            return View(model);
+        }
     }
 
     #endregion

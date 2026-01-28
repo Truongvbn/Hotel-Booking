@@ -15,6 +15,7 @@ public interface IRoomService
     Task<RoomType> UpdateRoomTypeAsync(RoomType roomType);
     
     // Room operations
+    Task<Room> AddRoomAsync(int userId, int roomTypeId, string roomNumber, int floor, string? status = null);
     Task AddRoomsBulkAsync(int roomTypeId, int startingNumber, int quantity, int floor);
     Task<Room> UpdateRoomAsync(int roomId, string roomNumber, int floor, string status);
     Task DeleteRoomAsync(int roomId);

@@ -9,4 +9,5 @@ public interface IRoomRepository : IRepository<Room>
     Task<Room?> GetRoomWithDetailsAsync(int roomId);
     Task<IEnumerable<Room>> GetRoomsByTypeAsync(int roomTypeId);
     Task UpdateRoomStatusAsync(int roomId, string status);
+    Task<bool> IsRoomNumberExistsAsync(int roomTypeId, string roomNumber);
 }

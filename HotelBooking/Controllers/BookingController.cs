@@ -151,6 +151,59 @@ public class BookingController : Controller
         }
     }
 
+    // POST: /Booking/RecalculatePrice
+    [HttpPost]
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> RecalculatePrice([FromBody] RecalculatePriceRequest request)
+    {
+        try
+        {
+            if (request == null || request.RoomId <= 0)
+            {
+                return BadRequest(new { error = "Invalid request" });
+            }
+
+            var checkIn = DateTime.Parse(request.CheckInDate);
+            var checkOut = DateTime.Parse(request.CheckOutDate);
+
+            // Validate dates
+            if (checkOut <= checkIn)
+            {
+                return BadRequest(new { error = "Check-out date must be after check-in date" });
+            }
+
+            if (checkIn.Date < DateTime.Today)
+            {
+                return BadRequest(new { error = "Check-in date cannot be in the past" });
+            }
+
+            // Check availability
+            var isAvailable = await _bookingService.IsRoomAvailableAsync(request.RoomId, checkIn, checkOut);
+            if (!isAvailable)
+            {
+                return Json(new { 
+                    isAvailable = false,
+                    error = "Room is not available for the selected dates"
+                });
+            }
+
+            // Calculate price
+            var totalPrice = await _bookingService.CalculateTotalPriceAsync(request.RoomId, checkIn, checkOut);
+            var nights = (int)(checkOut - checkIn).TotalDays;
+
+            return Json(new
+            {
+                isAvailable = true,
+                totalPrice = totalPrice,
+                nights = nights
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     // GET: /Booking/Confirmation/5
     [HttpGet]
     public async Task<IActionResult> Confirmation(int id)

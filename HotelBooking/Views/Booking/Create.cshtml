@@ -20,21 +20,20 @@
                 <div class="flex justify-between items-center mb-4">
                     <div>
                         <div class="font-medium">Dates</div>
-                        <div class="text-gray-600">@Model.CheckInDate.ToString("MMM dd") – @Model.CheckOutDate.ToString("MMM dd")</div>
+                        <div id="dates-display" class="text-gray-600">@Model.CheckInDate.ToString("MMM dd") – @Model.CheckOutDate.ToString("MMM dd")</div>
                     </div>
-                    <button class="font-medium underline decoration-1 text-gray-900">Edit</button>
+                    <button type="button" id="edit-dates-btn" onclick="document.getElementById('editDatesModal').showModal()" class="font-medium underline decoration-1 text-gray-900 hover:text-primary cursor-pointer transition-colors">Edit</button>
                 </div>
                 <div class="flex justify-between items-center">
                     <div>
                         <div class="font-medium">Guests</div>
                         <div class="text-gray-600"><span id="guest-display">@Model.GuestCount</span> guest@(Model.GuestCount > 1 ? "s" : "")</div>
                     </div>
-                    <button class="font-medium underline decoration-1 text-gray-900">Edit</button>
                 </div>
             </div>
 
             <form asp-action="Create" method="post" class="py-6">
-                @Html.AntiForgeryToken()
+                
                 <input type="hidden" asp-for="RoomId" />
                 <input type="hidden" asp-for="CheckInDate" />
                 <input type="hidden" asp-for="CheckOutDate" />
@@ -121,8 +120,8 @@
                      
                      <div class="space-y-4 text-gray-600">
                         <div class="flex justify-between">
-                            <span class="underline decoration-gray-300">@Model.PricePerNight.ToString("N0")₫ x @Model.Nights nights</span>
-                            <span>@Model.TotalPrice.ToString("N0")₫</span>
+                            <span class="underline decoration-gray-300"><span id="price-detail">@Model.PricePerNight.ToString("N0")₫ x @Model.Nights nights</span></span>
+                            <span id="subtotal-price">@Model.TotalPrice.ToString("N0")₫</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="underline decoration-gray-300">Cleaning fee</span>
@@ -138,7 +137,7 @@
                     
                     <div class="flex justify-between text-lg font-bold text-gray-900">
                         <span>Total (VND)</span>
-                        <span>@Model.TotalPrice.ToString("N0")₫</span>
+                        <span id="total-price">@Model.TotalPrice.ToString("N0")₫</span>
                     </div>
                 </div>
             </div>
@@ -146,6 +145,164 @@
     </div>
 </div>
 
+<!-- Edit Dates Modal -->
+<dialog id="editDatesModal" class="modal">
+    <div class="modal-box bg-white max-w-md">
+        <h3 class="font-bold text-lg mb-4">Edit Dates</h3>
+        <div class="space-y-4">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-medium">Check-in Date</span>
+                </label>
+                <input type="date" id="edit-checkin" 
+                       value="@Model.CheckInDate.ToString("yyyy-MM-dd")"
+                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                       class="input input-bordered w-full" />
+            </div>
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-medium">Check-out Date</span>
+                </label>
+                <input type="date" id="edit-checkout" 
+                       value="@Model.CheckOutDate.ToString("yyyy-MM-dd")"
+                       min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")"
+                       class="input input-bordered w-full" />
+            </div>
+            <div id="date-error" class="text-error text-sm hidden"></div>
+        </div>
+        <div class="modal-action">
+            <button type="button" id="save-dates" class="btn btn-primary">Save</button>
+            <button type="button" onclick="document.getElementById('editDatesModal').close()" class="btn btn-ghost">Cancel</button>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const roomId = @Model.RoomId;
+            const pricePerNight = @Model.PricePerNight;
+            const originalCheckIn = '@Model.CheckInDate.ToString("yyyy-MM-dd")';
+            const originalCheckOut = '@Model.CheckOutDate.ToString("yyyy-MM-dd")';
+            
+            const editDatesModal = document.getElementById('editDatesModal');
+            const editCheckin = document.getElementById('edit-checkin');
+            const editCheckout = document.getElementById('edit-checkout');
+            const saveDatesBtn = document.getElementById('save-dates');
+            const dateError = document.getElementById('date-error');
+            const datesDisplay = document.getElementById('dates-display');
+            
+            // Reset modal when opened
+            document.getElementById('edit-dates-btn').addEventListener('click', function() {
+                editCheckin.value = originalCheckIn;
+                editCheckout.value = originalCheckOut;
+                dateError.classList.add('hidden');
+                dateError.textContent = '';
+            });
+            
+            // Update checkout min date when checkin changes
+            editCheckin.addEventListener('change', function() {
+                const checkInDate = new Date(this.value);
+                checkInDate.setDate(checkInDate.getDate() + 1);
+                editCheckout.min = checkInDate.toISOString().split('T')[0];
+                
+                const currentCheckout = new Date(editCheckout.value);
+                if (currentCheckout <= new Date(this.value)) {
+                    editCheckout.value = checkInDate.toISOString().split('T')[0];
+                }
+            });
+            
+            // Save dates
+            saveDatesBtn.addEventListener('click', async function() {
+                const checkIn = editCheckin.value;
+                const checkOut = editCheckout.value;
+                
+                // Validation
+                if (!checkIn || !checkOut) {
+                    dateError.textContent = 'Please select both check-in and check-out dates.';
+                    dateError.classList.remove('hidden');
+                    return;
+                }
+                
+                const checkInDate = new Date(checkIn);
+                const checkOutDate = new Date(checkOut);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (checkInDate < today) {
+                    dateError.textContent = 'Check-in date cannot be in the past.';
+                    dateError.classList.remove('hidden');
+                    return;
+                }
+                
+                if (checkOutDate <= checkInDate) {
+                    dateError.textContent = 'Check-out date must be after check-in date.';
+                    dateError.classList.remove('hidden');
+                    return;
+                }
+                
+                this.disabled = true;
+                this.textContent = 'Checking...';
+                dateError.classList.add('hidden');
+                
+                try {
+                    const response = await fetch('@Url.Action("RecalculatePrice", "Booking")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            roomId: roomId,
+                            checkInDate: checkIn,
+                            checkOutDate: checkOut
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to recalculate price');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (!data.isAvailable) {
+                        dateError.textContent = 'Room is not available for the selected dates.';
+                        dateError.classList.remove('hidden');
+                        this.disabled = false;
+                        this.textContent = 'Save';
+                        return;
+                    }
+                    
+                    // Update hidden form fields
+                    document.querySelector('input[name="CheckInDate"]').value = checkIn;
+                    document.querySelector('input[name="CheckOutDate"]').value = checkOut;
+                    
+                    // Update display
+                    const checkInFormatted = new Date(checkIn).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    const checkOutFormatted = new Date(checkOut).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    datesDisplay.textContent = checkInFormatted + ' – ' + checkOutFormatted;
+                    
+                    // Update price display
+                    const nights = data.nights;
+                    document.getElementById('price-detail').textContent = pricePerNight.toLocaleString('en-US') + '₫ x ' + nights + ' nights';
+                    document.getElementById('subtotal-price').textContent = data.totalPrice.toLocaleString('en-US') + '₫';
+                    document.getElementById('total-price').textContent = data.totalPrice.toLocaleString('en-US') + '₫';
+                    
+                    // Close modal
+                    editDatesModal.close();
+                    
+                } catch (error) {
+                    dateError.textContent = 'An error occurred. Please try again.';
+                    dateError.classList.remove('hidden');
+                } finally {
+                    this.disabled = false;
+                    this.textContent = 'Save';
+                }
+            });
+        });
+    </script>
 }

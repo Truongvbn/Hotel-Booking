@@ -1,187 +1,102 @@
 # Hotel Booking - 3-Layer Architecture
 
-## System Architecture Overview
+## Request/Response Flow
 
 ```mermaid
-graph TB
-    subgraph "CLIENT"
+flowchart TB
+    subgraph CLIENT
         Browser["🌐 Browser"]
     end
 
-    subgraph "PRESENTATION LAYER - HotelBooking Project"
-        subgraph "Controllers"
-            HC["HomeController"]
-            UC["UserController"]
-            HoC["HotelController"]
-            BC["BookingController"]
-            AC["AdminController"]
-            HOC["HotelOwnerController"]
-        end
-        
-        subgraph "Views"
-            V1["User Views<br/>Login, Register, Profile"]
-            V2["Hotel Views<br/>Search, Details"]
-            V3["Booking Views<br/>Create, Confirm, MyBookings"]
-            V4["Admin Views<br/>Dashboard, Hotels, Rooms"]
-            V5["HotelOwner Views<br/>Dashboard, Manage"]
-        end
-        
-        subgraph "ViewModels"
-            VM["LoginViewModel<br/>RegisterViewModel<br/>SearchViewModel<br/>BookingViewModel<br/>AdminViewModel"]
-        end
+    subgraph LAYER1["1️⃣ PRESENTATION LAYER"]
+        Controllers["Controllers<br/>UserController, HotelController,<br/>BookingController, AdminController"]
+        Views["Views (31 files)<br/>Razor Templates"]
+        ViewModels["ViewModels<br/>LoginVM, SearchVM, BookingVM"]
     end
 
-    subgraph "BUSINESS LOGIC LAYER - Services Project"
-        subgraph "Service Interfaces"
-            IUS["IUserService"]
-            IHS["IHotelService"]
-            IRS["IRoomService"]
-            IBS["IBookingService"]
-        end
-        
-        subgraph "Service Implementations"
-            US["UserService"]
-            HS["HotelService"]
-            RS["RoomService"]
-            BS["BookingService"]
-        end
+    subgraph LAYER2["2️⃣ BUSINESS LOGIC LAYER"]
+        IServices["Interfaces<br/>IUserService, IHotelService,<br/>IRoomService, IBookingService"]
+        Services["Implementations<br/>UserService, HotelService,<br/>RoomService, BookingService"]
     end
 
-    subgraph "DATA ACCESS LAYER - DataAccess Project"
-        subgraph "Repository Interfaces"
-            IUR["IUserRepository"]
-            IHR["IHotelRepository"]
-            IRR["IRoomRepository"]
-            IRTR["IRoomTypeRepository"]
-            IBR["IBookingRepository"]
-        end
-        
-        subgraph "Repository Implementations"
-            UR["UserRepository"]
-            HR["HotelRepository"]
-            RR["RoomRepository"]
-            RTR["RoomTypeRepository"]
-            BR["BookingRepository"]
-        end
-        
-        subgraph "Entity Models"
-            M["User | Hotel | Room<br/>RoomType | Booking<br/>Payment | Review | Amenity"]
-        end
-        
-        CTX["HotelBookingContext<br/>DbContext"]
+    subgraph LAYER3["3️⃣ DATA ACCESS LAYER"]
+        IRepos["Interfaces<br/>IUserRepository, IHotelRepository,<br/>IRoomRepository, IBookingRepository"]
+        Repos["Implementations<br/>UserRepository, HotelRepository,<br/>RoomRepository, BookingRepository"]
+        Context["HotelBookingContext<br/>EF Core DbContext"]
+        Models["Entity Models<br/>User, Hotel, Room, Booking"]
     end
 
-    subgraph "DATABASE"
-        DB[("PostgreSQL<br/>Supabase")]
+    subgraph DB["DATABASE"]
+        PostgreSQL[("PostgreSQL<br/>Supabase")]
     end
 
-    Browser --> HC & UC & HoC & BC & AC & HOC
-    HC & UC & HoC & BC & AC & HOC --> V1 & V2 & V3 & V4 & V5
-    
-    UC --> IUS
-    HoC --> IHS
-    BC --> IBS
-    AC --> IHS & IRS & IBS
-    HOC --> IHS & IRS & IBS
-    
-    IUS --> US
-    IHS --> HS
-    IRS --> RS
-    IBS --> BS
-    
-    US --> IUR
-    HS --> IHR & IRTR
-    RS --> IRR & IRTR
-    BS --> IBR & IRR
-    
-    IUR --> UR
-    IHR --> HR
-    IRR --> RR
-    IRTR --> RTR
-    IBR --> BR
-    
-    UR & HR & RR & RTR & BR --> CTX
-    CTX --> M
-    CTX --> DB
+    %% Request Flow (down) - Blue
+    Browser -->|"① HTTP Request"| Controllers
+    Controllers -->|"② Call Interface"| IServices
+    IServices -->|"DI Inject"| Services
+    Services -->|"③ Call Interface"| IRepos
+    IRepos -->|"DI Inject"| Repos
+    Repos -->|"④ Query"| Context
+    Context -->|"⑤ SQL"| PostgreSQL
+
+    %% Response Flow (up) - Green
+    PostgreSQL -.->|"⑥ Data"| Context
+    Context -.->|"⑦ Entity"| Repos
+    Repos -.->|"⑧ Entity"| Services
+    Services -.->|"⑨ DTO/Entity"| Controllers
+    Controllers -->|"Bind"| ViewModels
+    ViewModels -->|"Render"| Views
+    Views -.->|"⑩ HTML"| Browser
+
+    %% Styling
+    style LAYER1 fill:#e3f2fd,stroke:#1976d2
+    style LAYER2 fill:#e8f5e9,stroke:#388e3c
+    style LAYER3 fill:#fff3e0,stroke:#f57c00
+    style DB fill:#fce4ec,stroke:#c2185b
 ```
 
 ---
 
-## Layer Details
-
-### 1️⃣ Presentation Layer (`HotelBooking/`)
-
-| Component | Files | Responsibility |
-|-----------|-------|----------------|
-| **Controllers** | 6 files | Handle HTTP requests, route to services |
-| **Views** | 31 .cshtml files | Razor templates for UI rendering |
-| **ViewModels** | 6 files | Data transfer objects for views |
-| **Validation** | DateValidationAttributes.cs | Custom validation attributes |
-
-### 2️⃣ Business Logic Layer (`Services/`)
-
-| Interface | Implementation | Responsibility |
-|-----------|----------------|----------------|
-| `IUserService` | `UserService` | Auth, registration, profile |
-| `IHotelService` | `HotelService` | Hotel CRUD, search, availability |
-| `IRoomService` | `RoomService` | Room management, status |
-| `IBookingService` | `BookingService` | Booking lifecycle, payments |
-
-### 3️⃣ Data Access Layer (`DataAccess/`)
-
-| Component | Files | Responsibility |
-|-----------|-------|----------------|
-| **Models** | 8 entity classes | Database schema representation |
-| **Repositories** | 5 interfaces + 5 implementations | Data access abstraction |
-| **Context** | HotelBookingContext | EF Core DbContext, Fluent API |
-| **Migrations** | SQL scripts | Database versioning |
-
----
-
-## Dependency Flow
+## Detailed Flow (2-Way)
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│  Controllers → ViewModels → Views                           │
-│         ↓ (depends on)                                       │
-├─────────────────────────────────────────────────────────────┤
-│                  BUSINESS LOGIC LAYER                        │
-│  IServices ← Services (implements)                          │
-│         ↓ (depends on)                                       │
-├─────────────────────────────────────────────────────────────┤
-│                   DATA ACCESS LAYER                          │
-│  IRepositories ← Repositories → DbContext → Database        │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│  BROWSER                                                         │
+│  ① Request: POST /Login {email, password}                       │
+│  ⑩ Response: HTML + Cookie                                      │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │ ↓ Request    ↑ Response
+┌─────────────────────────▼───────────────────────────────────────┐
+│  1️⃣ PRESENTATION LAYER                                          │
+│  ② Controller gọi IUserService.AuthenticateAsync()              │
+│  ⑨ Nhận User entity → Tạo cookie → Render View                  │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │ ↓ Request    ↑ Response
+┌─────────────────────────▼───────────────────────────────────────┐
+│  2️⃣ BUSINESS LOGIC LAYER                                        │
+│  ③ Service gọi IUserRepository.GetByEmailAsync()                │
+│  ⑧ Verify password → Return User hoặc null                     │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │ ↓ Request    ↑ Response
+┌─────────────────────────▼───────────────────────────────────────┐
+│  3️⃣ DATA ACCESS LAYER                                           │
+│  ④ Repository gọi DbContext.Users.FirstOrDefaultAsync()        │
+│  ⑦ Return User entity                                           │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │ ↓ SQL        ↑ Data
+┌─────────────────────────▼───────────────────────────────────────┐
+│  DATABASE                                                        │
+│  ⑤ SELECT * FROM "Users" WHERE "Email" = @email                 │
+│  ⑥ Return row data                                               │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Dependency Injection (Program.cs)
+## Layer Responsibilities
 
-```csharp
-// Data Access Layer
-builder.Services.AddDbContext<HotelBookingContext>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IHotelRepository, HotelRepository>();
-builder.Services.AddScoped<IRoomRepository, RoomRepository>();
-builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
-builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-
-// Business Logic Layer
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IHotelService, HotelService>();
-builder.Services.AddScoped<IRoomService, RoomService>();
-builder.Services.AddScoped<IBookingService, BookingService>();
-```
-
----
-
-## Key Design Patterns
-
-| Pattern | Implementation |
-|---------|----------------|
-| **Repository Pattern** | `IRepository<T>` base + specific repos |
-| **Dependency Injection** | Constructor injection via DI container |
-| **Interface Segregation** | Separate interfaces per domain |
-| **MVC Pattern** | ASP.NET Core MVC architecture |
+| Layer | Request (↓) | Response (↑) |
+|-------|-------------|--------------|
+| **Presentation** | Nhận HTTP request, validate input | Return View/JSON/Redirect |
+| **Business Logic** | Thực thi business rules | Return DTO/Entity/Exception |
+| **Data Access** | Query database | Return Entity/Collection |

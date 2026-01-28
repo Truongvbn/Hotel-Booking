@@ -59,4 +59,10 @@ public class RoomRepository : Repository<Room>, IRoomRepository
             await UpdateAsync(room);
         }
     }
+
+    public async Task<bool> IsRoomNumberExistsAsync(int roomTypeId, string roomNumber)
+    {
+        return await _dbSet
+            .AnyAsync(r => r.RoomTypeId == roomTypeId && r.RoomNumber == roomNumber);
+    }
 }

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using HotelBooking.ViewModels;
 using Services.Interfaces;
-using DataAccess.Models;
 
 namespace HotelBooking.Controllers;
 
@@ -31,68 +30,68 @@ public class AdminController : Controller
 
     // GET: /Admin/Dashboard
     [HttpGet]
-    public async Task<IActionResult> Dashboard()
-    {
-        IEnumerable<Hotel> hotels;
+//    public async Task<IActionResult> Dashboard()
+//    {
+//        IEnumerable<Hotel> hotels;
         
-        hotels = await _hotelService.GetAllHotelsAsync();
+//        hotels = await _hotelService.GetAllHotelsAsync();
 
-        var totalRooms = 0;
-    var availableRooms = 0;
-    var occupiedRooms = 0;
-    var totalBookings = 0;
-    var pendingBookings = 0;
-    var todayCheckIns = 0;
-    var todayCheckOuts = 0;
-    decimal totalRevenue = 0;
-    var recentBookings = new List<Booking>();
+//        var totalRooms = 0;
+//    var availableRooms = 0;
+//    var occupiedRooms = 0;
+//    var totalBookings = 0;
+//    var pendingBookings = 0;
+//    var todayCheckIns = 0;
+//    var todayCheckOuts = 0;
+//    decimal totalRevenue = 0;
+//    var recentBookings = new List<Booking>();
 
-    foreach (var hotel in hotels)
-    {
-        var rooms = await _roomService.GetHotelRoomsAsync(hotel.HotelId);
-        totalRooms += rooms.Count();
-        availableRooms += rooms.Count(r => r.Status == "Available");
-        occupiedRooms += rooms.Count(r => r.Status == "Occupied");
+//    foreach (var hotel in hotels)
+//    {
+//        var rooms = await _roomService.GetHotelRoomsAsync(hotel.HotelId);
+//        totalRooms += rooms.Count();
+//        availableRooms += rooms.Count(r => r.Status == "Available");
+//        occupiedRooms += rooms.Count(r => r.Status == "Occupied");
 
-        var bookings = await _bookingService.GetHotelBookingsAsync(hotel.HotelId);
-        totalBookings += bookings.Count();
-        pendingBookings += bookings.Count(b => b.Status == "Pending");
-        todayCheckIns += bookings.Count(b => b.CheckInDate.Date == DateTime.Today && b.Status == "Confirmed");
-        todayCheckOuts += bookings.Count(b => b.CheckOutDate.Date == DateTime.Today && b.Status == "CheckedIn");
-        totalRevenue += bookings.Where(b => b.Status != "Cancelled").Sum(b => b.TotalPrice);
+//        var bookings = await _bookingService.GetHotelBookingsAsync(hotel.HotelId);
+//        totalBookings += bookings.Count();
+//        pendingBookings += bookings.Count(b => b.Status == "Pending");
+//        todayCheckIns += bookings.Count(b => b.CheckInDate.Date == DateTime.Today && b.Status == "Confirmed");
+//        todayCheckOuts += bookings.Count(b => b.CheckOutDate.Date == DateTime.Today && b.Status == "CheckedIn");
+//        totalRevenue += bookings.Where(b => b.Status != "Cancelled").Sum(b => b.TotalPrice);
         
-        recentBookings.AddRange(bookings);
-    }
+//        recentBookings.AddRange(bookings);
+//    }
 
-    var model = new DashboardViewModel
-    {
-        TotalHotels = hotels.Count(),
-        TotalRooms = totalRooms,
-        AvailableRooms = availableRooms,
-        OccupiedRooms = occupiedRooms,
-        TotalBookings = totalBookings,
-        PendingBookings = pendingBookings,
-        TodayCheckIns = todayCheckIns,
-        TodayCheckOuts = todayCheckOuts,
-        TotalRevenue = totalRevenue,
-        OccupancyRate = totalRooms > 0 ? (decimal)occupiedRooms / totalRooms * 100 : 0,
-        RecentBookings = recentBookings
-            .OrderByDescending(b => b.CreatedDate)
-            .Take(5)
-            .Select(b => new BookingItemViewModel
-            {
-                BookingId = b.BookingId,
-                HotelName = b.Room.RoomType.Hotel.Name,
-                RoomTypeName = b.Room.RoomType.Name,
-                CheckInDate = b.CheckInDate,
-                CheckOutDate = b.CheckOutDate,
-                TotalPrice = b.TotalPrice,
-                Status = b.Status
-            })
-    };
+//    var model = new DashboardViewModel
+//    {
+//        TotalHotels = hotels.Count(),
+//        TotalRooms = totalRooms,
+//        AvailableRooms = availableRooms,
+//        OccupiedRooms = occupiedRooms,
+//        TotalBookings = totalBookings,
+//        PendingBookings = pendingBookings,
+//        TodayCheckIns = todayCheckIns,
+//        TodayCheckOuts = todayCheckOuts,
+//        TotalRevenue = totalRevenue,
+//        OccupancyRate = totalRooms > 0 ? (decimal)occupiedRooms / totalRooms * 100 : 0,
+//        RecentBookings = recentBookings
+//            .OrderByDescending(b => b.CreatedDate)
+//            .Take(5)
+//            .Select(b => new BookingItemViewModel
+//            {
+//                BookingId = b.BookingId,
+//                HotelName = b.Room.RoomType.Hotel.Name,
+//                RoomTypeName = b.Room.RoomType.Name,
+//                CheckInDate = b.CheckInDate,
+//                CheckOutDate = b.CheckOutDate,
+//                TotalPrice = b.TotalPrice,
+//                Status = b.Status
+//            })
+//    };
 
-    return View(model);
-}
+//    return View(model);
+//}
 
     #region Hotels Management
 
@@ -642,6 +641,156 @@ public class AdminController : Controller
         }
 
         return RedirectToAction("Bookings");
+    }
+
+    #endregion
+
+    #region Users Management
+
+    // GET: /Admin/Users
+    [HttpGet]
+    public async Task<IActionResult> Users(string? role = null)
+    {
+        var users = await _userService.GetAllUsersAsync(role);
+
+        var model = new AdminUserListViewModel
+        {
+            RoleFilter = role,
+            TotalUsers = users.Count(),
+            ActiveUsers = users.Count(u => u.IsActive),
+            InactiveUsers = users.Count(u => !u.IsActive),
+            Users = users.Select(u => new AdminUserItem
+            {
+                UserId = u.UserId,
+                Email = u.Email,
+                FullName = u.FullName,
+                PhoneNumber = u.PhoneNumber,
+                Role = u.Role,
+                IsActive = u.IsActive,
+                CreatedDate = u.CreatedDate,
+                HotelName = u.Hotel?.Name
+            })
+        };
+
+        return View(model);
+    }
+
+    // GET: /Admin/EditUser/5
+    [HttpGet]
+    public async Task<IActionResult> EditUser(int id)
+    {
+        var user = await _userService.GetByIdAsync(id);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        var hotels = await _hotelService.GetAllHotelsAsync();
+
+        var model = new AdminEditUserViewModel
+        {
+            UserId = user.UserId,
+            Email = user.Email,
+            FirstName = user.FirstName ?? string.Empty,
+            LastName = user.LastName ?? string.Empty,
+            PhoneNumber = user.PhoneNumber,
+            Address = user.Address,
+            Role = user.Role,
+            IsActive = user.IsActive,
+            HotelId = user.HotelId,
+            CreatedDate = user.CreatedDate,
+            AvailableHotels = hotels.Select(h => new HotelDropdownItem
+            {
+                HotelId = h.HotelId,
+                Name = h.Name
+            })
+        };
+
+        return View(model);
+    }
+
+    // POST: /Admin/EditUser
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditUser(AdminEditUserViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var hotels = await _hotelService.GetAllHotelsAsync();
+            model.AvailableHotels = hotels.Select(h => new HotelDropdownItem
+            {
+                HotelId = h.HotelId,
+                Name = h.Name
+            });
+            return View(model);
+        }
+
+        try
+        {
+            await _userService.AdminUpdateUserAsync(
+                model.UserId,
+                model.FirstName,
+                model.LastName,
+                model.PhoneNumber,
+                model.Address,
+                model.Role,
+                model.IsActive,
+                model.HotelId);
+
+            TempData["Success"] = "User updated successfully!";
+            return RedirectToAction("Users");
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            var hotels = await _hotelService.GetAllHotelsAsync();
+            model.AvailableHotels = hotels.Select(h => new HotelDropdownItem
+            {
+                HotelId = h.HotelId,
+                Name = h.Name
+            });
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            var hotels = await _hotelService.GetAllHotelsAsync();
+            model.AvailableHotels = hotels.Select(h => new HotelDropdownItem
+            {
+                HotelId = h.HotelId,
+                Name = h.Name
+            });
+            return View(model);
+        }
+    }
+
+    // POST: /Admin/ToggleUserStatus/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleUserStatus(int id)
+    {
+        try
+        {
+            var user = await _userService.GetByIdAsync(id);
+            if (user == null)
+            {
+                TempData["Error"] = "User not found";
+                return RedirectToAction("Users");
+            }
+
+            await _userService.UpdateUserStatusAsync(id, !user.IsActive);
+            TempData["Success"] = $"User {(user.IsActive ? "deactivated" : "activated")} successfully!";
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction("Users");
     }
 
     #endregion

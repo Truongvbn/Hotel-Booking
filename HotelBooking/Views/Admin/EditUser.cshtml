@@ -1,0 +1,156 @@
+@model HotelBooking.ViewModels.AdminEditUserViewModel
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<div class="max-w-2xl mx-auto py-8 px-4">
+    <!-- Breadcrumb -->
+    <nav class="text-sm mb-6">
+        <ol class="flex items-center gap-2 text-gray-500">
+            <li><a asp-action="Dashboard" class="hover:text-primary">Dashboard</a></li>
+            <li>/</li>
+            <li><a asp-action="Users" class="hover:text-primary">Users</a></li>
+            <li>/</li>
+            <li class="text-gray-900 font-medium">Edit User</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-rose-500 to-pink-600 px-8 py-8 text-white">
+            <div class="flex items-center gap-4">
+                <a asp-action="Users" class="btn btn-ghost btn-circle text-white hover:bg-white/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold">Edit User</h1>
+                    <p class="text-white/80">@Model.Email</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="p-8">
+            <form asp-action="EditUser" method="post" class="space-y-6">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="UserId" />
+                <input type="hidden" asp-for="Email" />
+
+                <!-- Validation Summary -->
+                <div asp-validation-summary="ModelOnly" class="alert alert-error"></div>
+
+                <!-- Read-only info -->
+                <div class="bg-gray-50 rounded-xl p-4 mb-6">
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500">Email:</span>
+                            <span class="font-medium text-gray-900 ml-2">@Model.Email</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Created:</span>
+                            <span class="font-medium text-gray-900 ml-2">@Model.CreatedDate.ToString("MMM dd, yyyy")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Name fields -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label asp-for="FirstName" class="label">
+                            <span class="label-text font-semibold text-gray-700">First Name *</span>
+                        </label>
+                        <input asp-for="FirstName" class="input input-bordered w-full focus:input-primary" placeholder="Enter first name" />
+                        <span asp-validation-for="FirstName" class="text-error text-sm"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="LastName" class="label">
+                            <span class="label-text font-semibold text-gray-700">Last Name *</span>
+                        </label>
+                        <input asp-for="LastName" class="input input-bordered w-full focus:input-primary" placeholder="Enter last name" />
+                        <span asp-validation-for="LastName" class="text-error text-sm"></span>
+                    </div>
+                </div>
+
+                <!-- Contact info -->
+                <div>
+                    <label asp-for="PhoneNumber" class="label">
+                        <span class="label-text font-semibold text-gray-700">Phone Number</span>
+                    </label>
+                    <input asp-for="PhoneNumber" class="input input-bordered w-full focus:input-primary" placeholder="Enter phone number" />
+                    <span asp-validation-for="PhoneNumber" class="text-error text-sm"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Address" class="label">
+                        <span class="label-text font-semibold text-gray-700">Address</span>
+                    </label>
+                    <textarea asp-for="Address" class="textarea textarea-bordered w-full focus:textarea-primary h-20" placeholder="Enter address"></textarea>
+                    <span asp-validation-for="Address" class="text-error text-sm"></span>
+                </div>
+
+                <div class="border-t border-gray-100 pt-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Role & Permissions</h3>
+
+                    <!-- Role selection -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label asp-for="Role" class="label">
+                                <span class="label-text font-semibold text-gray-700">Role *</span>
+                            </label>
+                            <select asp-for="Role" class="select select-bordered w-full focus:select-primary">
+                                @foreach (var role in Model.AvailableRoles)
+                                {
+                                    <option value="@role">@role</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Role" class="text-error text-sm"></span>
+                        </div>
+
+                        <div>
+                            <label asp-for="HotelId" class="label">
+                                <span class="label-text font-semibold text-gray-700">Assigned Hotel</span>
+                            </label>
+                            <select asp-for="HotelId" class="select select-bordered w-full focus:select-primary">
+                                <option value="">-- No Hotel --</option>
+                                @foreach (var hotel in Model.AvailableHotels)
+                                {
+                                    <option value="@hotel.HotelId">@hotel.Name</option>
+                                }
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Only applicable for HotelOwner role</p>
+                        </div>
+                    </div>
+
+                    <!-- Account Status -->
+                    <div class="mt-6">
+                        <label class="label cursor-pointer justify-start gap-4">
+                            <input type="checkbox" asp-for="IsActive" class="toggle toggle-success" />
+                            <div>
+                                <span class="label-text font-semibold text-gray-700">Account Active</span>
+                                <p class="text-xs text-gray-500">Inactive users cannot log in to the system</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-100">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Save Changes
+                    </button>
+                    <a asp-action="Users" class="btn btn-ghost flex-1">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

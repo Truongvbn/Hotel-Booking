@@ -144,4 +144,86 @@ public class UserService : IUserService
         // Simple placeholder - replace with BCrypt verification in production
         return inputPassword == storedPassword;
     }
+
+    // Admin user management methods
+    public async Task<IEnumerable<User>> GetAllUsersAsync(string? roleFilter = null)
+    {
+        return await _userRepository.GetAllUsersWithHotelsAsync(roleFilter);
+    }
+
+    public async Task<bool> UpdateUserStatusAsync(int userId, bool isActive)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new ArgumentException("User not found");
+        }
+
+        // Prevent deactivating the last admin
+        if (!isActive && user.Role == "Admin")
+        {
+            var allUsers = await _userRepository.GetAllUsersAsync();
+            var activeAdmins = allUsers.Count(u => u.Role == "Admin" && u.IsActive && u.UserId != userId);
+            if (activeAdmins == 0)
+            {
+                throw new InvalidOperationException("Cannot deactivate the last active admin");
+            }
+        }
+
+        user.IsActive = isActive;
+        user.UpdatedDate = DateTime.UtcNow;
+
+        await _userRepository.UpdateAsync(user);
+        return true;
+    }
+
+    public async Task<User> AdminUpdateUserAsync(int userId, string firstName, string lastName, string? phone, string? address, string role, bool isActive, int? hotelId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new ArgumentException("User not found");
+        }
+
+        // Validate role
+        var validRoles = new[] { "Customer", "HotelOwner", "Admin" };
+        if (!validRoles.Contains(role))
+        {
+            throw new ArgumentException("Invalid role");
+        }
+
+        // Prevent demoting the last admin
+        if (user.Role == "Admin" && role != "Admin")
+        {
+            var allUsers = await _userRepository.GetAllUsersAsync();
+            var otherAdmins = allUsers.Count(u => u.Role == "Admin" && u.UserId != userId);
+            if (otherAdmins == 0)
+            {
+                throw new InvalidOperationException("Cannot demote the last admin");
+            }
+        }
+
+        // Prevent deactivating the last admin
+        if (!isActive && user.Role == "Admin")
+        {
+            var allUsers = await _userRepository.GetAllUsersAsync();
+            var activeAdmins = allUsers.Count(u => u.Role == "Admin" && u.IsActive && u.UserId != userId);
+            if (activeAdmins == 0)
+            {
+                throw new InvalidOperationException("Cannot deactivate the last active admin");
+            }
+        }
+
+        user.FirstName = firstName;
+        user.LastName = lastName;
+        user.PhoneNumber = phone;
+        user.Address = address;
+        user.Role = role;
+        user.IsActive = isActive;
+        user.HotelId = role == "HotelOwner" ? hotelId : null;
+        user.UpdatedDate = DateTime.UtcNow;
+
+        await _userRepository.UpdateAsync(user);
+        return user;
+    }
 }

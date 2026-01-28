@@ -31,4 +31,27 @@ public class UserRepository : Repository<User>, IUserRepository
                         .ThenInclude(rt => rt.Hotel)
             .FirstOrDefaultAsync(u => u.UserId == userId);
     }
+
+    public async Task<IEnumerable<User>> GetAllUsersAsync()
+    {
+        return await _dbSet
+            .OrderByDescending(u => u.CreatedDate)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<User>> GetAllUsersWithHotelsAsync(string? roleFilter = null)
+    {
+        var query = _dbSet
+            .Include(u => u.Hotel)
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(roleFilter))
+        {
+            query = query.Where(u => u.Role == roleFilter);
+        }
+
+        return await query
+            .OrderByDescending(u => u.CreatedDate)
+            .ToListAsync();
+    }
 }

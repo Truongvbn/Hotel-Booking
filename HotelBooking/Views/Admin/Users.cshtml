@@ -1,0 +1,224 @@
+@model HotelBooking.ViewModels.AdminUserListViewModel
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<div class="max-w-7xl mx-auto py-8 px-4">
+    <!-- Breadcrumb -->
+    <nav class="text-sm mb-6">
+        <ol class="flex items-center gap-2 text-gray-500">
+            <li><a asp-action="Dashboard" class="hover:text-primary">Dashboard</a></li>
+            <li>/</li>
+            <li class="text-gray-900 font-medium">Users</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900">User Management</h1>
+            <p class="text-sm text-gray-500 mt-1">Manage user accounts, roles, and permissions.</p>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-error mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>@TempData["Error"]</span>
+        </div>
+    }
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-gray-900">@Model.TotalUsers</p>
+                    <p class="text-sm text-gray-500">Total Users</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-green-600">@Model.ActiveUsers</p>
+                    <p class="text-sm text-gray-500">Active Users</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-red-600">@Model.InactiveUsers</p>
+                    <p class="text-sm text-gray-500">Inactive Users</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+        <div class="flex flex-wrap gap-2">
+            <a asp-action="Users" class="btn btn-sm @(Model.RoleFilter == null ? "btn-primary" : "btn-ghost")">All Roles</a>
+            <a asp-action="Users" asp-route-role="Admin" class="btn btn-sm @(Model.RoleFilter == "Admin" ? "btn-primary" : "btn-ghost")">Admin</a>
+            <a asp-action="Users" asp-route-role="HotelOwner" class="btn btn-sm @(Model.RoleFilter == "HotelOwner" ? "btn-primary" : "btn-ghost")">Hotel Owner</a>
+            <a asp-action="Users" asp-route-role="Customer" class="btn btn-sm @(Model.RoleFilter == "Customer" ? "btn-primary" : "btn-ghost")">Customer</a>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        @if (!Model.Users.Any())
+        {
+            <div class="text-center py-16">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">No users found</h3>
+                <p class="text-gray-500">No users match the selected filter.</p>
+            </div>
+        }
+        else
+        {
+            <div class="overflow-x-auto">
+                <table class="table table-zebra w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="font-semibold">User</th>
+                            <th class="font-semibold">Role</th>
+                            <th class="font-semibold">Hotel</th>
+                            <th class="font-semibold">Status</th>
+                            <th class="font-semibold">Created</th>
+                            <th class="font-semibold text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr class="hover">
+                                <td>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-rose-400 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                            @(user.FullName.Length > 0 ? user.FullName.Substring(0, 1).ToUpper() : "U")
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-gray-900">@user.FullName</div>
+                                            <div class="text-sm text-gray-500">@user.Email</div>
+                                            @if (!string.IsNullOrEmpty(user.PhoneNumber))
+                                            {
+                                                <div class="text-xs text-gray-400">@user.PhoneNumber</div>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @{
+                                        var roleBadgeClass = user.Role switch
+                                        {
+                                            "Admin" => "badge-error",
+                                            "HotelOwner" => "badge-warning",
+                                            _ => "badge-info"
+                                        };
+                                    }
+                                    <span class="badge @roleBadgeClass">@user.Role</span>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(user.HotelName))
+                                    {
+                                        <span class="text-sm text-gray-700">@user.HotelName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-sm text-gray-400">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge badge-success gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-error gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            Inactive
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="text-sm text-gray-500">@user.CreatedDate.ToString("MMM dd, yyyy")</span>
+                                </td>
+                                <td class="text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <a asp-action="EditUser" asp-route-id="@user.UserId" class="btn btn-sm btn-ghost">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                            Edit
+                                        </a>
+                                        <form asp-action="ToggleUserStatus" asp-route-id="@user.UserId" method="post" class="inline">
+                                            @Html.AntiForgeryToken()
+                                            @if (user.IsActive)
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-ghost text-warning" onclick="return confirm('Are you sure you want to deactivate this user?');">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                                    </svg>
+                                                    Deactivate
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-ghost text-success" onclick="return confirm('Are you sure you want to activate this user?');">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    Activate
+                                                </button>
+                                            }
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

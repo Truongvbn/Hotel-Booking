@@ -184,4 +184,122 @@ public class UserController : Controller
     {
         return View();
     }
+
+    // GET: /User/EditProfile
+    [HttpGet]
+    public async Task<IActionResult> EditProfile()
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return RedirectToAction("Login");
+        }
+
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var user = await _userService.GetByIdAsync(userId);
+
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        var model = new EditProfileViewModel
+        {
+            FirstName = user.FirstName ?? string.Empty,
+            LastName = user.LastName ?? string.Empty,
+            PhoneNumber = user.PhoneNumber,
+            Address = user.Address,
+            Email = user.Email,
+            Role = user.Role
+        };
+
+        return View(model);
+    }
+
+    // POST: /User/EditProfile
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditProfile(EditProfileViewModel model)
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return RedirectToAction("Login");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        try
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            await _userService.UpdateProfileAsync(
+                userId,
+                model.FirstName,
+                model.LastName,
+                model.PhoneNumber,
+                model.Address);
+
+            TempData["Success"] = "Your profile has been updated successfully.";
+            return RedirectToAction("Profile");
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(model);
+        }
+    }
+
+    // GET: /User/ChangePassword
+    [HttpGet]
+    public IActionResult ChangePassword()
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return RedirectToAction("Login");
+        }
+
+        return View(new ChangePasswordViewModel());
+    }
+
+    // POST: /User/ChangePassword
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return RedirectToAction("Login");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        try
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var success = await _userService.ChangePasswordAsync(userId, model.CurrentPassword, model.NewPassword);
+
+            if (!success)
+            {
+                ModelState.AddModelError("CurrentPassword", "Current password is incorrect");
+                return View(model);
+            }
+
+            TempData["Success"] = "Your password has been changed successfully.";
+            return RedirectToAction("Profile");
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(model);
+        }
+        catch (Exception)
+        {
+            ModelState.AddModelError(string.Empty, "Failed to change password. Please try again later.");
+            return View(model);
+        }
+    }
 }

@@ -11,4 +11,9 @@ public interface IUserService
     Task<User> UpdateProfileAsync(int userId, string firstName, string lastName, string? phone, string? address);
     Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
     Task<IEnumerable<Booking>> GetUserBookingsAsync(int userId);
+    
+    // Admin user management
+    Task<IEnumerable<User>> GetAllUsersAsync(string? roleFilter = null);
+    Task<bool> UpdateUserStatusAsync(int userId, bool isActive);
+    Task<User> AdminUpdateUserAsync(int userId, string firstName, string lastName, string? phone, string? address, string role, bool isActive, int? hotelId);
 }

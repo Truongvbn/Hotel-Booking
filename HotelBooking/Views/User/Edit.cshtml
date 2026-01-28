@@ -1,0 +1,81 @@
+@model HotelBooking.ViewModels.EditProfileViewModel
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="max-w-2xl mx-auto py-12 px-4">
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-rose-500 to-pink-600 px-8 py-10 text-white">
+            <div class="flex items-center gap-6">
+                <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold backdrop-blur-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold">Edit Profile</h1>
+                    <p class="text-white/80">Update your personal information</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Form -->
+        <div class="p-8">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-error mb-6"></div>
+
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">First Name <span class="text-error">*</span></span>
+                            </label>
+                            <input asp-for="FirstName" class="input input-bordered w-full" placeholder="Enter your first name" />
+                            <span asp-validation-for="FirstName" class="text-error text-sm mt-1"></span>
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Last Name <span class="text-error">*</span></span>
+                            </label>
+                            <input asp-for="LastName" class="input input-bordered w-full" placeholder="Enter your last name" />
+                            <span asp-validation-for="LastName" class="text-error text-sm mt-1"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Phone Number</span>
+                        </label>
+                        <input asp-for="PhoneNumber" class="input input-bordered w-full" placeholder="Enter your phone number" />
+                        <span asp-validation-for="PhoneNumber" class="text-error text-sm mt-1"></span>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Address</span>
+                        </label>
+                        <textarea asp-for="Address" class="textarea textarea-bordered w-full h-24" placeholder="Enter your address"></textarea>
+                        <span asp-validation-for="Address" class="text-error text-sm mt-1"></span>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 pt-6 mt-8 flex flex-wrap gap-3">
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Save Changes
+                    </button>
+                    <a asp-action="Profile" class="btn btn-ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

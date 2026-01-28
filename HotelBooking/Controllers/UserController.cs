@@ -179,6 +179,69 @@ public class UserController : Controller
         return View(user);
     }
 
+    // GET: /User/Edit
+    [HttpGet]
+    public async Task<IActionResult> Edit()
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return RedirectToAction("Login");
+        }
+
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var user = await _userService.GetByIdAsync(userId);
+
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        var model = new EditProfileViewModel
+        {
+            FirstName = user.FirstName ?? string.Empty,
+            LastName = user.LastName ?? string.Empty,
+            PhoneNumber = user.PhoneNumber ?? string.Empty,
+            Address = user.Address ?? string.Empty
+        };
+
+        return View(model);
+    }
+
+    // POST: /User/Edit
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(EditProfileViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        try
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var updatedUser = await _userService.UpdateProfileAsync(
+                userId,
+                model.FirstName,
+                model.LastName,
+                model.PhoneNumber,
+                model.Address);
+
+            TempData["Success"] = "Profile updated successfully!";
+            return RedirectToAction("Profile");
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(model);
+        }
+        catch (Exception)
+        {
+            ModelState.AddModelError(string.Empty, "An error occurred while updating your profile. Please try again.");
+            return View(model);
+        }
+    }
+
     // GET: /User/AccessDenied
     public IActionResult AccessDenied()
     {
